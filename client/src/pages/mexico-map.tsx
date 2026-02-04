@@ -5,52 +5,56 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Building2, MapPin, Search, Filter, X } from "lucide-react";
+import { Building2, MapPin, Search, X } from "lucide-react";
 import { Link } from "wouter";
 import type { Center } from "@shared/schema";
 
-const mexicanStates = [
-  { name: "Aguascalientes", code: "AGS", path: "M180,280 L195,275 L205,285 L195,300 L175,295 Z" },
-  { name: "Baja California", code: "BC", path: "M25,50 L70,45 L85,120 L70,200 L30,190 L15,100 Z" },
-  { name: "Baja California Sur", code: "BCS", path: "M30,200 L70,205 L80,280 L65,350 L25,340 L15,260 Z" },
-  { name: "Campeche", code: "CAM", path: "M420,380 L480,375 L490,420 L460,450 L410,440 Z" },
-  { name: "Chiapas", code: "CHP", path: "M370,430 L420,425 L435,480 L400,510 L355,490 Z" },
-  { name: "Chihuahua", code: "CHH", path: "M100,80 L200,75 L220,180 L180,220 L90,210 Z" },
-  { name: "Ciudad de México", code: "CDMX", path: "M255,345 L275,340 L280,360 L265,370 L250,360 Z" },
-  { name: "Coahuila", code: "COA", path: "M140,140 L250,130 L270,200 L220,240 L130,230 Z" },
-  { name: "Colima", code: "COL", path: "M145,365 L170,360 L175,385 L155,395 L140,380 Z" },
-  { name: "Durango", code: "DUR", path: "M110,200 L200,195 L210,270 L170,300 L100,290 Z" },
-  { name: "Estado de México", code: "MEX", path: "M230,330 L280,325 L290,375 L260,390 L220,375 Z" },
-  { name: "Guanajuato", code: "GTO", path: "M195,290 L250,285 L260,320 L235,340 L185,330 Z" },
-  { name: "Guerrero", code: "GRO", path: "M200,380 L280,375 L290,440 L250,470 L185,450 Z" },
-  { name: "Hidalgo", code: "HID", path: "M270,300 L320,295 L330,340 L300,360 L260,345 Z" },
-  { name: "Jalisco", code: "JAL", path: "M130,280 L200,275 L215,350 L170,380 L115,360 Z" },
-  { name: "Michoacán", code: "MIC", path: "M170,340 L250,335 L260,400 L215,430 L155,410 Z" },
-  { name: "Morelos", code: "MOR", path: "M260,370 L290,365 L295,395 L275,410 L255,400 Z" },
-  { name: "Nayarit", code: "NAY", path: "M100,260 L145,255 L155,300 L130,330 L90,315 Z" },
-  { name: "Nuevo León", code: "NL", path: "M230,160 L300,155 L315,220 L280,250 L220,240 Z" },
-  { name: "Oaxaca", code: "OAX", path: "M290,400 L380,395 L395,470 L340,500 L275,480 Z" },
-  { name: "Puebla", code: "PUE", path: "M290,340 L360,335 L375,400 L330,430 L275,410 Z" },
-  { name: "Querétaro", code: "QRO", path: "M230,290 L270,285 L275,320 L255,335 L225,325 Z" },
-  { name: "Quintana Roo", code: "QROO", path: "M490,340 L530,335 L545,420 L510,460 L480,430 Z" },
-  { name: "San Luis Potosí", code: "SLP", path: "M200,230 L280,225 L295,300 L250,330 L190,315 Z" },
-  { name: "Sinaloa", code: "SIN", path: "M75,180 L140,175 L155,260 L115,300 L65,280 Z" },
-  { name: "Sonora", code: "SON", path: "M45,60 L140,55 L160,160 L120,200 L35,185 Z" },
-  { name: "Tabasco", code: "TAB", path: "M380,370 L440,365 L455,400 L420,425 L370,410 Z" },
-  { name: "Tamaulipas", code: "TAM", path: "M260,170 L340,165 L355,280 L300,320 L250,300 Z" },
-  { name: "Tlaxcala", code: "TLA", path: "M285,335 L310,330 L315,355 L300,365 L280,355 Z" },
-  { name: "Veracruz", code: "VER", path: "M310,280 L400,275 L415,400 L355,440 L295,410 Z" },
-  { name: "Yucatán", code: "YUC", path: "M450,320 L510,315 L520,370 L485,395 L440,380 Z" },
-  { name: "Zacatecas", code: "ZAC", path: "M150,220 L220,215 L235,280 L195,310 L140,295 Z" },
-];
+const mexicanStates: Record<string, { name: string; path: string }> = {
+  "AGS": { name: "Aguascalientes", path: "M207.5,283.1l-1.4-2.7l-4.1-0.7l-1.4,2l-2.7,0l-0.7-4.1l4.8-4.1l2.7,0.7l2.7,2l2,2.7l0,2.7L207.5,283.1z" },
+  "BC": { name: "Baja California", path: "M51.8,56.4l2-4.1l-0.7-8.8l-6.1-10.8l-8.1-8.8l-4.1-1.4l-2,2l0.7,8.1l-4.8,2l-4.8,4.8l-2,8.8l0.7,12.2l4.8,16.9l1.4,10.2l5.4,18.2l2,14.2l4.8,8.1l0.7,6.1l6.8,12.9l4.1-2l1.4-6.8l-2-8.1l4.8-4.1l0-4.1l-4.8-9.5l-1.4-8.8l4.8-3.4l1.4-7.4l-1.4-10.2l0-11.5l4.1-6.1l-1.4-6.1L51.8,56.4z" },
+  "BCS": { name: "Baja California Sur", path: "M68.7,156.1l-5.4-2l-2.7,0l-4.8,6.8l0,8.1l-4.8,9.5l0,4.1l4.1,8.8l-2.7,4.8l-0.7,8.8l2,6.8l-4.1,6.1l-1.4,12.2l2.7,8.1l0,6.1l4.1,8.8l8.1,4.8l8.8,0l4.8-2.7l0-10.2l-4.8-12.2l4.1-20.3l4.8-4.8l-1.4-10.8l-1.4-10.8l-4.1-8.1l-1.4-8.1L68.7,156.1z" },
+  "CAM": { name: "Campeche", path: "M421.1,380.3l-3.4,4.8l2,4.8l-8.8,6.1l-2,4.8l-4.1,0l-6.8,8.8l-8.1,4.1l0,6.8l-5.4,6.1l-1.4,6.8l6.1,2.7l17.6,0l0-12.2l3.4-15.6l8.8-3.4l12.9,0l0.7-5.4l-6.1-4.1L421.1,380.3z" },
+  "CHP": { name: "Chiapas", path: "M371.2,446.9l-2.7-4.8l-6.8-1.4l-6.1,2l-6.8-2l-4.8,4.8l-0.7,6.8l-8.8,11.5l-1.4,6.1l8.1,0l8.8-2l9.5,4.8l4.8,8.8l4.1,1.4l2.7-2.7l0-6.1l4.8-1.4l1.4-6.1l6.8-2.7l1.4-5.4l-4.1-4.8l0-4.1L371.2,446.9z" },
+  "CHH": { name: "Chihuahua", path: "M137.3,73.3l-4.1,2l-8.8-2.7l-4.8,3.4l-6.8,0l-3.4,2l-4.1-0.7l-4.8,4.8l-8.8,2.7l-2.7,4.8l-5.4,0.7l-2.7,10.2l0.7,8.1l4.8,4.8l-0.7,4.8l-4.1,1.4l0,6.8l4.8,3.4l6.8,0l1.4,6.1l4.1,1.4l1.4,4.1l10.8,6.8l2.7,6.1l8.8,4.8l2.7,6.8l4.1,2.7l0.7,4.1l8.1,9.5l8.1-0.7l8.8,2l8.8-0.7l4.8-4.8l10.8-1.4l6.1-7.4l0-6.8l-4.1-6.1l0.7-8.8l-2.7-5.4l2.7-7.4l-4.8-4.1l1.4-9.5l-2.7-12.2l2-10.2l-2.7-4.8l0-6.1l-6.8-2.7l-2.7-4.8l-6.1,0.7l-4.1-4.1l-4.8,0l-6.8-6.8L137.3,73.3z" },
+  "CDMX": { name: "Ciudad de México", path: "M258.2,347.3l-4.1,0.7l-2,4.1l1.4,4.1l4.1,2l4.8-2.7l1.4-4.1l-2-2.7L258.2,347.3z" },
+  "COA": { name: "Coahuila", path: "M201.4,112.3l-8.8-1.4l-10.2,1.4l-2,8.8l2,6.8l-3.4,6.1l-2.7,14.9l-6.8,6.8l-1.4,12.2l4.8,4.1l-2.7,7.4l2.7,5.4l-0.7,8.8l4.1,6.1l0,6.8l4.8,4.8l16.2,0l6.8-4.8l6.1,0.7l6.1-4.1l0-4.1l8.8-3.4l4.8-8.1l6.1,0l1.4-4.8l-2.7-4.1l4.1-6.8l-4.1-11.5l-8.8-0.7l-1.4-6.1l-6.8-2l-4.8-6.8l1.4-4.8l-4.8-5.4l0.7-8.8l-4.8-2.7l-1.4-8.8L201.4,112.3z" },
+  "COL": { name: "Colima", path: "M161.7,367.4l-4.8,0l-2.7,4.1l-4.8,0.7l-1.4,4.8l3.4,4.8l4.8,2l4.1-2l2.7-6.1l0.7-4.8L161.7,367.4z" },
+  "DUR": { name: "Durango", path: "M130.5,181.8l-6.8,0.7l-6.1,8.1l-4.1-0.7l-8.1,4.8l-4.1,0l-4.8,5.4l0,4.1l6.8,10.2l1.4,10.8l-2.7,8.1l2,8.8l0,8.1l8.1,4.8l6.1,1.4l8.1,8.8l8.8-3.4l6.8,0l1.4-6.1l8.8-0.7l1.4-6.1l6.8-5.4l-0.7-8.1l8.1-4.8l0-4.1l-8.1-9.5l-0.7-4.1l-4.1-2.7l-2.7-6.8l-8.8-4.8l-2.7-6.1l-10.8-6.8L130.5,181.8z" },
+  "GTO": { name: "Guanajuato", path: "M217.7,293.9l-4.1-2l-14.2,4.8l-1.4,4.1l2.7,5.4l-2.7,6.8l4.8,4.8l6.8-4.1l4.8,0l1.4-4.8l10.8-1.4l1.4-4.8l-2.7-4.1L217.7,293.9z" },
+  "GRO": { name: "Guerrero", path: "M244.7,367.4l-10.2,2l-10.8,9.5l-6.1,1.4l-7.4,10.8l-2,8.1l4.8,4.8l10.2-2l4.8,2.7l14.9-2.7l14.2-8.8l1.4-5.4l4.8-2l4.8,2l1.4-4.1l-4.8-4.8l-4.8,0l-4.8-5.4l-6.1,0L244.7,367.4z" },
+  "HID": { name: "Hidalgo", path: "M269.7,305.4l-6.8,2.7l-1.4,4.8l-6.8,1.4l-1.4,6.1l5.4,2.7l-1.4,4.8l4.8,2.7l10.8-6.1l1.4-6.1l8.1-1.4l0.7-4.8l-4.8-1.4L269.7,305.4z" },
+  "JAL": { name: "Jalisco", path: "M161.7,261.4l-6.8,4.1l-8.1,0l-6.1,8.8l-1.4,14.2l4.8,8.8l-2.7,6.1l2.7,4.8l-1.4,10.8l-5.4,6.8l5.4,8.1l4.1,0.7l1.4,4.8l4.8,0l2.7-4.1l4.8,0l4.8-4.8l12.9,2l1.4-5.4l-8.8-8.8l-2-10.8l2-6.8l-4.1-2.7l0-4.8l4.8-7.4l1.4-8.1l-5.4-2.7L161.7,261.4z" },
+  "MEX": { name: "Estado de México", path: "M244,328.8l-4.8,1.4l-6.1,8.8l-1.4,6.8l5.4,8.8l8.8,1.4l4.1-0.7l2-4.1l4.1-0.7l-1.4-4.1l2-4.1l-1.4-4.8l-4.1-1.4l0-4.1L244,328.8z" },
+  "MIC": { name: "Michoacán", path: "M219.1,332.2l-8.8,1.4l-10.8,8.1l-8.8-2l-4.1,8.8l-8.8,8.8l-4.8,0l-1.4,4.8l4.1,6.8l8.8,2l10.2-2l10.8,9.5l10.2-2l5.4-8.8l-5.4-8.8l1.4-6.8l6.1-8.8l4.8-1.4l-4.8-4.8L219.1,332.2z" },
+  "MOR": { name: "Morelos", path: "M258.2,359.4l-4.8,1.4l-2,4.8l2.7,4.8l8.8,0l2.7-4.1l0-4.1L258.2,359.4z" },
+  "NAY": { name: "Nayarit", path: "M134.6,250.6l-8.1-2.7l-6.1,4.1l-2.7,6.8l-8.8,2.7l-4.1,6.8l4.8,8.1l8.8,4.1l6.1-8.8l8.1,0l6.8-4.1l0.7-5.4l-2-6.1L134.6,250.6z" },
+  "NL": { name: "Nuevo León", path: "M257.5,158l-3.4-11.5l-10.8,4.8l-16.2-2l-8.8,0.7l-4.8,2.7l1.4,8.8l4.8,2.7l-0.7,8.8l4.8,5.4l-1.4,4.8l4.8,6.8l6.8,2l1.4,6.1l8.8,0.7l4.1,11.5l4.1,0.7l1.4-6.1l6.8-6.8l-4.8-12.9l1.4-8.1l-2.7-6.8L257.5,158z" },
+  "OAX": { name: "Oaxaca", path: "M325.1,395.7l-7.4,0.7l-8.8,6.8l-14.9,0l-7.4-5.4l-1.4,4.1l-4.8-2l-4.8,2l-1.4,5.4l-14.2,8.8l2,5.4l-4.1,4.8l2.7,4.8l-4.8,6.1l8.8,4.8l6.8-0.7l8.8,6.1l10.8-8.1l4.8,0l1.4-6.1l8.8-11.5l0.7-6.8l4.8-4.8l6.8,2l6.1-2l5.4,1.4l2.7-6.8L325.1,395.7z" },
+  "PUE": { name: "Puebla", path: "M284.6,322.9l-4.1,1.4l-1.4,4.1l-5.4,2.7l-4.8,6.1l4.1,1.4l1.4,4.8l-2,4.1l1.4,4.1l4.8,1.4l1.4,6.1l4.8-2l7.4,5.4l14.9,0l4.1-4.8l-0.7-10.8l-4.8-2l-1.4-6.8l-4.8-6.1l6.8-4.8l-1.4-4.1l-8.8,2L284.6,322.9z" },
+  "QRO": { name: "Querétaro", path: "M232.6,293.2l-4.8,1.4l-2.7,4.1l4.8,4.1l4.8,0l1.4,4.8l4.8-1.4l1.4-4.1l4.1-1.4l-0.7-4.8L232.6,293.2z" },
+  "QROO": { name: "Quintana Roo", path: "M455.5,340.1l-12.9,0l-8.8,3.4l-3.4,15.6l0,12.2l-8.8,8.1l5.4,18.2l-2,9.5l6.1,6.8l8.8-2l0.7-14.2l4.8-24.3l4.8-10.8l8.1-8.1L455.5,340.1z" },
+  "SLP": { name: "San Luis Potosí", path: "M244,207.3l-6.8,3.4l-3.4,6.8l0.7,8.8l-8.8,4.1l-2.7,9.5l4.8,6.8l-1.4,9.5l2.7,4.8l6.8,0l1.4-6.1l4.1-1.4l1.4-4.1l6.8-2.7l1.4-8.8l8.8-7.4l3.4-10.2l-2.7-9.5L244,207.3z" },
+  "SIN": { name: "Sinaloa", path: "M100.3,149.3l-9.5-2l-6.8,6.8l-4.1,12.2l4.8,14.2l-0.7,8.8l3.4,8.1l6.8,8.8l4.1,0l4.8-5.4l4.1,0l8.1-4.8l4.1,0.7l6.1-8.1l6.8-0.7l2.7-6.1l-0.7-6.8l-6.8,0l-4.8-3.4l0-6.8l4.1-1.4l0.7-4.8l-4.8-4.8l-0.7-8.1l-6.1,5.4l-4.8-6.1L100.3,149.3z" },
+  "SON": { name: "Sonora", path: "M100.3,54.3l-4.1-4.1l-8.1,2.7l-5.4,6.8l-4.8,0l-8.8,6.8l-2,8.1l-5.4-2l-3.4,4.8l4.8,9.5l0,4.1l-4.8,4.1l2,8.1l-1.4,6.8l6.8,12.2l4.1,0l1.4-8.8l6.8-10.2l10.2,0l8.8-4.1l6.8,4.1l4.1-6.8l0-9.5l6.8-2.7l9.5,2l4.8-6.1l-4.1-2l-4.8-12.2l6.8-6.8l-4.1-9.5l0-8.1l-4.1,2l-8.8-2.7L100.3,54.3z" },
+  "TAB": { name: "Tabasco", path: "M372.6,389.6l-6.8,1.4l-10.2,8.1l-4.8-0.7l-2.7,4.8l8.1,9.5l-4.8,6.1l4.1,1.4l8.8-4.1l6.8-8.8l4.1,0l2-4.8l8.8-6.1l-2-4.8L372.6,389.6z" },
+  "TAM": { name: "Tamaulipas", path: "M268.4,171.5l-5.4,0.7l-3.4,6.1l-6.8,6.8l-1.4,6.1l-4.1-0.7l-4.1,6.8l2.7,4.1l-1.4,4.8l4.1,2.7l-0.7,8.1l4.8,1.4l6.8,8.8l8.8,2.7l1.4,8.8l8.8,8.1l6.8,0l1.4-8.8l-8.8-12.2l2-12.2l-4.1-6.8l4.1-8.8l-1.4-11.5l-4.8-6.8L268.4,171.5z" },
+  "TLA": { name: "Tlaxcala", path: "M277.2,332.2l-2.7,2l0,4.1l4.1,2.7l4.8-2l0.7-4.1L277.2,332.2z" },
+  "VER": { name: "Veracruz", path: "M336.6,292.5l-6.1,2.7l-8.1,0l-1.4,6.8l-8.8,0.7l-4.8,7.4l-6.1,1.4l-1.4,4.1l8.8-2l1.4,4.1l-6.8,4.8l4.8,6.1l1.4,6.8l4.8,2l0.7,10.8l8.8,4.1l0.7,8.1l-6.8,2l2.7,5.4l-5.4,4.1l0.7,8.8l-4.8,4.8l6.8,6.8l6.8-1.4l10.2-8.1l4.8,0.7l4.8-6.1l-2.7-4.8l4.1-4.8l-2-5.4l4.1-9.5l-8.1-17.6l-2-12.2l6.8-15.6l4.1-4.8l-4.1-6.1L336.6,292.5z" },
+  "YUC": { name: "Yucatán", path: "M455.5,340.1l-12.2,0l-8.1,4.1l-8.8,0l-6.1,14.9l-2.7,4.1l8.1,4.8l3.4-4.8l2-4.8l8.8-6.1l4.1,0l6.1-4.1L455.5,340.1z" },
+  "ZAC": { name: "Zacatecas", path: "M207.5,181.8l-8.1,4.8l0.7,8.1l-6.8,5.4l-1.4,6.1l-8.8,0.7l-1.4,6.1l-6.8,0l-8.8,3.4l4.1,8.1l-0.7,5.4l-6.8,4.1l0.7,8.1l6.8,1.4l4.1,2l2.7-4.1l4.8-1.4l8.1,2.7l4.1,6.8l4.1-2l14.2-4.8l4.1,2l2.7-4.8l-4.8-6.8l2.7-9.5l8.8-4.1l-0.7-8.8l3.4-6.8l6.8-3.4l1.4-4.1l-4.8-2.7l-1.4-6.1l-8.8-2L207.5,181.8z" },
+};
 
 function StateShape({ 
-  state, 
+  stateCode, 
+  stateName,
+  path,
   centerCount, 
   isSelected, 
   onClick 
 }: { 
-  state: typeof mexicanStates[0]; 
+  stateCode: string;
+  stateName: string;
+  path: string;
   centerCount: number; 
   isSelected: boolean;
   onClick: () => void;
@@ -61,25 +65,16 @@ function StateShape({
     <g 
       onClick={onClick} 
       className="cursor-pointer transition-all duration-200"
-      data-testid={`state-${state.code.toLowerCase()}`}
+      data-testid={`state-${stateCode.toLowerCase()}`}
     >
+      <title>{stateName} ({centerCount} centros)</title>
       <path
-        d={state.path}
-        fill={isSelected ? "hsl(var(--primary))" : hasCenter ? "hsl(var(--primary) / 0.6)" : "hsl(var(--muted))"}
+        d={path}
+        fill={isSelected ? "hsl(var(--primary))" : hasCenter ? "hsl(142 76% 36%)" : "hsl(var(--muted))"}
         stroke="hsl(var(--background))"
-        strokeWidth="2"
+        strokeWidth="1"
         className="transition-all duration-200 hover:opacity-80"
       />
-      {hasCenter && (
-        <circle
-          cx={state.path.match(/M(\d+)/)?.[1] || 0}
-          cy={state.path.match(/M\d+,(\d+)/)?.[1] || 0}
-          r="8"
-          fill="hsl(var(--background))"
-          stroke="hsl(var(--primary))"
-          strokeWidth="2"
-        />
-      )}
     </g>
   );
 }
@@ -90,20 +85,49 @@ export default function MexicoMap() {
   
   const { data: centers = [] } = useQuery<Center[]>({ queryKey: ['/api/centers'] });
 
+  const stateNameMap: Record<string, string> = {
+    "Ciudad de México": "CDMX",
+    "Nuevo León": "NL",
+    "Jalisco": "JAL",
+    "Baja California": "BC",
+    "Quintana Roo": "QROO",
+    "Yucatán": "YUC",
+    "Veracruz": "VER",
+    "Querétaro": "QRO",
+  };
+
   const getCenterCountByState = (stateCode: string) => {
-    return centers.filter(c => c.state.toUpperCase() === stateCode || c.state.toLowerCase() === stateCode.toLowerCase()).length;
+    const stateName = mexicanStates[stateCode]?.name;
+    return centers.filter(c => {
+      const centerState = c.state.trim();
+      return centerState === stateName || 
+             stateNameMap[centerState] === stateCode ||
+             centerState.toUpperCase() === stateCode;
+    }).length;
+  };
+
+  const getStateCodeFromName = (name: string): string | null => {
+    const directMatch = stateNameMap[name];
+    if (directMatch) return directMatch;
+    
+    for (const [code, state] of Object.entries(mexicanStates)) {
+      if (state.name === name || state.name.toLowerCase() === name.toLowerCase()) {
+        return code;
+      }
+    }
+    return null;
   };
 
   const filteredCenters = centers.filter(center => {
     const matchesSearch = center.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          center.city.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesState = selectedState ? 
-      (center.state.toUpperCase() === selectedState || center.state.toLowerCase() === selectedState.toLowerCase()) : 
+      getStateCodeFromName(center.state) === selectedState : 
       true;
     return matchesSearch && matchesState;
   });
 
-  const selectedStateName = mexicanStates.find(s => s.code === selectedState)?.name;
+  const selectedStateName = selectedState ? mexicanStates[selectedState]?.name : null;
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-6 p-6" data-testid="page-map">
@@ -114,26 +138,28 @@ export default function MexicoMap() {
         </div>
 
         <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 p-4 overflow-auto">
+          <CardContent className="p-4">
+            <div className="relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-lg p-4 overflow-auto">
               <svg 
-                viewBox="0 0 560 530" 
+                viewBox="0 0 500 450" 
                 className="w-full h-auto max-h-[500px]"
                 data-testid="mexico-svg-map"
               >
                 <defs>
                   <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.2"/>
+                    <feDropShadow dx="1" dy="1" stdDeviation="2" floodOpacity="0.15"/>
                   </filter>
                 </defs>
                 <g filter="url(#shadow)">
-                  {mexicanStates.map((state) => (
+                  {Object.entries(mexicanStates).map(([code, state]) => (
                     <StateShape
-                      key={state.code}
-                      state={state}
-                      centerCount={getCenterCountByState(state.code)}
-                      isSelected={selectedState === state.code}
-                      onClick={() => setSelectedState(selectedState === state.code ? null : state.code)}
+                      key={code}
+                      stateCode={code}
+                      stateName={state.name}
+                      path={state.path}
+                      centerCount={getCenterCountByState(code)}
+                      isSelected={selectedState === code}
+                      onClick={() => setSelectedState(selectedState === code ? null : code)}
                     />
                   ))}
                 </g>
@@ -141,7 +167,7 @@ export default function MexicoMap() {
 
               <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-md p-3 text-xs space-y-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-primary/60"></div>
+                  <div className="w-4 h-4 rounded" style={{ backgroundColor: "hsl(142 76% 36%)" }}></div>
                   <span>Con centros</span>
                 </div>
                 <div className="flex items-center gap-2">
