@@ -38,7 +38,11 @@ export interface IStorage {
   
   // Document Versions
   getDocumentVersions(documentId: string): Promise<DocumentVersion[]>;
+  getDocumentVersion(id: string): Promise<DocumentVersion | undefined>;
+  getPendingVersions(departmentId?: string): Promise<DocumentVersion[]>;
   createDocumentVersion(version: InsertDocumentVersion): Promise<DocumentVersion>;
+  approveVersion(id: string, approvedBy: string): Promise<DocumentVersion | undefined>;
+  rejectVersion(id: string, rejectedBy: string, reason: string): Promise<DocumentVersion | undefined>;
   
   // Audit Logs
   getAuditLogs(limit?: number): Promise<AuditLog[]>;
@@ -146,15 +150,70 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(documentVersions.version));
   }
 
+  async getDocumentVersion(id: string): Promise<DocumentVersion | undefined> {
+    const [version] = await db.select().from(documentVersions).where(eq(documentVersions.id, id));
+    return version;
+  }
+
+  async getPendingVersions(departmentId?: string): Promise<DocumentVersion[]> {
+    if (departmentId) {
+      // Get document IDs for the department first
+      const deptDocs = await db.select().from(documents).where(eq(documents.departmentId, departmentId));
+      const docIds = deptDocs.map(d => d.id);
+      if (docIds.length === 0) return [];
+      
+      const allPending = await db.select().from(documentVersions)
+        .where(eq(documentVersions.approvalStatus, "pending"))
+        .orderBy(desc(documentVersions.uploadedAt));
+      
+      return allPending.filter(v => docIds.includes(v.documentId));
+    }
+    return db.select().from(documentVersions)
+      .where(eq(documentVersions.approvalStatus, "pending"))
+      .orderBy(desc(documentVersions.uploadedAt));
+  }
+
   async createDocumentVersion(version: InsertDocumentVersion): Promise<DocumentVersion> {
     const [created] = await db.insert(documentVersions).values(version).returning();
     
-    // Update document's current version
-    await db.update(documents)
-      .set({ currentVersion: version.version })
-      .where(eq(documents.id, version.documentId));
+    // Note: Document's currentVersion will only be updated when version is approved
+    // For now, we don't update the currentVersion until approval
     
     return created;
+  }
+
+  async approveVersion(id: string, approvedBy: string): Promise<DocumentVersion | undefined> {
+    const [updated] = await db.update(documentVersions)
+      .set({ 
+        approvalStatus: "approved",
+        approvedBy,
+        approvedAt: new Date()
+      })
+      .where(eq(documentVersions.id, id))
+      .returning();
+    
+    if (updated) {
+      // Update document's current version to the approved version
+      await db.update(documents)
+        .set({ currentVersion: updated.version })
+        .where(eq(documents.id, updated.documentId));
+    }
+    
+    return updated;
+  }
+
+  async rejectVersion(id: string, rejectedBy: string, reason: string): Promise<DocumentVersion | undefined> {
+    const [updated] = await db.update(documentVersions)
+      .set({ 
+        approvalStatus: "rejected",
+        approvedBy: rejectedBy,
+        approvedAt: new Date(),
+        rejectionReason: reason
+      })
+      .where(eq(documentVersions.id, id))
+      .returning();
+    
+    return updated;
   }
 
   // Audit Logs

@@ -9,6 +9,7 @@ export const centerStatusEnum = pgEnum("center_status", ["active", "inactive"]);
 export const centerTypeEnum = pgEnum("center_type", ["centro", "edificio", "planta", "sucursal"]);
 export const incidentStatusEnum = pgEnum("incident_status", ["pending", "approved", "rejected", "closed"]);
 export const incidentTypeEnum = pgEnum("incident_type", ["approval_request", "document_observed", "missing_info", "sensitive_change"]);
+export const approvalStatusEnum = pgEnum("approval_status", ["pending", "approved", "rejected"]);
 
 // Users table
 export const users = pgTable("users", {
@@ -76,6 +77,10 @@ export const documentVersions = pgTable("document_versions", {
   fileSize: integer("file_size").notNull(),
   mimeType: text("mime_type").notNull(),
   changeReason: text("change_reason").notNull(),
+  approvalStatus: approvalStatusEnum("approval_status").notNull().default("pending"),
+  approvedBy: varchar("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  rejectionReason: text("rejection_reason"),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
   uploadedBy: varchar("uploaded_by"),
 });

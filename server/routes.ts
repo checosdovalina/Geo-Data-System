@@ -145,11 +145,14 @@ export async function registerRoutes(
     }
   });
 
-  // Document Versions
+  // Document Versions (only show approved versions to regular users)
   app.get("/api/documents/:id/versions", async (req: Request, res: Response) => {
     try {
+      const showAll = req.query.showAll === 'true'; // For admin users
       const versions = await storage.getDocumentVersions(req.params.id);
-      res.json(versions);
+      // Filter to only approved versions for regular users
+      const filteredVersions = showAll ? versions : versions.filter(v => v.approvalStatus === 'approved');
+      res.json(filteredVersions);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch document versions" });
     }
@@ -162,10 +165,14 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Document not found" });
       }
       
+      // Get highest version number from existing versions
+      const versions = await storage.getDocumentVersions(req.params.id);
+      const highestVersion = versions.length > 0 ? Math.max(...versions.map(v => v.version)) : 0;
+      
       const versionData = {
         ...req.body,
         documentId: req.params.id,
-        version: document.currentVersion + 1,
+        version: highestVersion + 1,
       };
       
       const parsed = insertDocumentVersionSchema.safeParse(versionData);
@@ -174,10 +181,56 @@ export async function registerRoutes(
       }
       
       const version = await storage.createDocumentVersion(parsed.data);
-      await logAudit(req, "version", "document", document.id, document.name, `Nueva versión ${version.version}: ${version.changeReason}`);
+      await logAudit(req, "version", "document", document.id, document.name, `Nueva versión ${version.version} pendiente de aprobación: ${version.changeReason}`);
       res.status(201).json(version);
     } catch (error) {
       res.status(500).json({ error: "Failed to create document version" });
+    }
+  });
+
+  // Pending approvals
+  app.get("/api/pending-approvals", async (req: Request, res: Response) => {
+    try {
+      const departmentId = req.query.departmentId as string | undefined;
+      const pendingVersions = await storage.getPendingVersions(departmentId);
+      res.json(pendingVersions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch pending approvals" });
+    }
+  });
+
+  app.post("/api/versions/:id/approve", async (req: Request, res: Response) => {
+    try {
+      const version = await storage.approveVersion(req.params.id, "Admin Usuario");
+      if (!version) {
+        return res.status(404).json({ error: "Version not found" });
+      }
+      
+      const document = await storage.getDocument(version.documentId);
+      await logAudit(req, "approve", "document_version", version.id, document?.name || "Documento", `Versión ${version.version} aprobada`);
+      res.json(version);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to approve version" });
+    }
+  });
+
+  app.post("/api/versions/:id/reject", async (req: Request, res: Response) => {
+    try {
+      const { reason } = req.body;
+      if (!reason || reason.length < 5) {
+        return res.status(400).json({ error: "Rejection reason is required (min 5 characters)" });
+      }
+      
+      const version = await storage.rejectVersion(req.params.id, "Admin Usuario", reason);
+      if (!version) {
+        return res.status(404).json({ error: "Version not found" });
+      }
+      
+      const document = await storage.getDocument(version.documentId);
+      await logAudit(req, "reject", "document_version", version.id, document?.name || "Documento", `Versión ${version.version} rechazada: ${reason}`);
+      res.json(version);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to reject version" });
     }
   });
 

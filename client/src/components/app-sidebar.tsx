@@ -9,6 +9,7 @@ import {
   Bell,
   LayoutDashboard,
   FolderOpen,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ const managementItems = [
 ];
 
 const operationsItems = [
+  { title: "Aprobaciones", url: "/approvals", icon: CheckCircle2 },
   { title: "Incidentes", url: "/incidents", icon: AlertTriangle, badge: 3 },
   { title: "Auditoría", url: "/audit", icon: ClipboardList },
   { title: "Notificaciones", url: "/notifications", icon: Bell, badge: 5 },

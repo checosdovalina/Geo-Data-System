@@ -35,9 +35,11 @@ MVP implementation is complete with the following modules:
 │   │   ├── dashboard.tsx    # Main dashboard
 │   │   ├── mexico-map.tsx   # Interactive Mexico map
 │   │   ├── centers.tsx      # Centers management
+│   │   ├── center-detail.tsx # Center detail with documents
 │   │   ├── documents.tsx    # Document management
 │   │   ├── departments.tsx  # Departments view
 │   │   ├── users.tsx        # Users and roles
+│   │   ├── approvals.tsx    # Document approval workflow
 │   │   ├── incidents.tsx    # Incidents workflow
 │   │   ├── audit.tsx        # Audit logs
 │   │   └── notifications.tsx
@@ -58,6 +60,14 @@ MVP implementation is complete with the following modules:
 - Each update creates a new version
 - Complete version history available
 - Change reasons are mandatory
+
+### Document Approval Workflow
+- New document versions start with status "pending"
+- Department admins can approve or reject pending versions
+- Only approved versions are visible to regular users
+- Document currentVersion only updates when a version is approved
+- Rejection requires a reason
+- All approval/rejection actions are logged in audit trail
 
 ### Audit Trail
 - All actions are logged with user, timestamp, IP
@@ -91,6 +101,11 @@ MVP implementation is complete with the following modules:
 - `POST /api/documents` - Create document
 - `GET /api/documents/:id/versions` - Get version history
 - `POST /api/documents/:id/versions` - Create new version
+
+### Document Approvals
+- `GET /api/pending-approvals` - Get all pending document versions
+- `POST /api/versions/:id/approve` - Approve a pending version
+- `POST /api/versions/:id/reject` - Reject a pending version (with reason)
 
 ### Departments
 - `GET /api/departments` - List all departments

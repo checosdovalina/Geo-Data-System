@@ -12,6 +12,7 @@ import MexicoMap from "@/pages/mexico-map";
 import CentersPage from "@/pages/centers";
 import CenterDetailPage from "@/pages/center-detail";
 import DocumentsPage from "@/pages/documents";
+import ApprovalsPage from "@/pages/approvals";
 import DepartmentsPage from "@/pages/departments";
 import UsersPage from "@/pages/users";
 import IncidentsPage from "@/pages/incidents";
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/centers" component={CentersPage} />
       <Route path="/centers/:id" component={CenterDetailPage} />
       <Route path="/documents" component={DocumentsPage} />
+      <Route path="/approvals" component={ApprovalsPage} />
       <Route path="/departments" component={DepartmentsPage} />
       <Route path="/users" component={UsersPage} />
       <Route path="/incidents" component={IncidentsPage} />

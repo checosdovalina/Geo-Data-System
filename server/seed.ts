@@ -70,19 +70,24 @@ export async function seedDatabase() {
     const insertedDocs = await db.insert(documents).values(docData).returning();
     console.log(`Inserted ${insertedDocs.length} documents`);
 
-    // Seed Document Versions
-    const versionData = [
-      { documentId: insertedDocs[0].id, version: 1, fileName: "escritura_santa_fe_v1.pdf", fileSize: 2048000, mimeType: "application/pdf", changeReason: "Documento inicial registrado", uploadedBy: insertedUsers[1].id },
-      { documentId: insertedDocs[1].id, version: 1, fileName: "predial_monterrey_2024.pdf", fileSize: 512000, mimeType: "application/pdf", changeReason: "Pago de predial 2024", uploadedBy: insertedUsers[2].id },
-      { documentId: insertedDocs[2].id, version: 1, fileName: "contrato_gdl_v1.pdf", fileSize: 1024000, mimeType: "application/pdf", changeReason: "Contrato original firmado", uploadedBy: insertedUsers[1].id },
-      { documentId: insertedDocs[2].id, version: 2, fileName: "contrato_gdl_v2.pdf", fileSize: 1048000, mimeType: "application/pdf", changeReason: "Adendum con nuevas cláusulas", uploadedBy: insertedUsers[1].id },
+    // Seed Document Versions (approved versions)
+    const approvedVersionData = [
+      { documentId: insertedDocs[0].id, version: 1, fileName: "escritura_santa_fe_v1.pdf", fileSize: 2048000, mimeType: "application/pdf", changeReason: "Documento inicial registrado", uploadedBy: insertedUsers[1].id, approvalStatus: "approved" as const, approvedBy: insertedUsers[0].id, approvedAt: new Date() },
+      { documentId: insertedDocs[1].id, version: 1, fileName: "predial_monterrey_2024.pdf", fileSize: 512000, mimeType: "application/pdf", changeReason: "Pago de predial 2024", uploadedBy: insertedUsers[2].id, approvalStatus: "approved" as const, approvedBy: insertedUsers[0].id, approvedAt: new Date() },
+      { documentId: insertedDocs[2].id, version: 1, fileName: "contrato_gdl_v1.pdf", fileSize: 1024000, mimeType: "application/pdf", changeReason: "Contrato original firmado", uploadedBy: insertedUsers[1].id, approvalStatus: "approved" as const, approvedBy: insertedUsers[0].id, approvedAt: new Date() },
     ];
 
-    await db.insert(documentVersions).values(versionData);
+    await db.insert(documentVersions).values(approvedVersionData);
     
-    // Update document version counts
-    await db.update(documents).set({ currentVersion: 2 }).where(sql`${documents.id} = ${insertedDocs[2].id}`);
-    console.log(`Inserted document versions`);
+    // Seed pending versions for approval testing
+    const pendingVersionData = [
+      { documentId: insertedDocs[2].id, version: 2, fileName: "contrato_gdl_v2.pdf", fileSize: 1048000, mimeType: "application/pdf", changeReason: "Adendum con nuevas cláusulas de renovación", uploadedBy: insertedUsers[1].id, approvalStatus: "pending" as const },
+      { documentId: insertedDocs[0].id, version: 2, fileName: "escritura_santa_fe_v2.pdf", fileSize: 2150000, mimeType: "application/pdf", changeReason: "Actualización de linderos después de medición", uploadedBy: insertedUsers[1].id, approvalStatus: "pending" as const },
+      { documentId: insertedDocs[3].id, version: 1, fileName: "licencia_tijuana_v1.pdf", fileSize: 768000, mimeType: "application/pdf", changeReason: "Licencia de funcionamiento 2024", uploadedBy: insertedUsers[0].id, approvalStatus: "pending" as const },
+    ];
+
+    await db.insert(documentVersions).values(pendingVersionData);
+    console.log(`Inserted document versions (approved and pending)`);
 
     // Seed Incidents
     const incidentData = [
