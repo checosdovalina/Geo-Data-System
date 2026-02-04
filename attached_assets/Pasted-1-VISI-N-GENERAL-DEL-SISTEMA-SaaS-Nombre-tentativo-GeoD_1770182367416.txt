@@ -1,0 +1,345 @@
+1. VISIÓN GENERAL DEL SISTEMA (SaaS)
+Nombre tentativo
+
+GeoDoc Center (nombre de trabajo)
+
+Tipo
+
+SaaS Multi-Tenant | Gestión Documental & Gobernanza de Edificios
+
+Alcance
+
+190 centros / edificios en México
+
+6–7 departamentos por centro
+
+Información legal, fiscal, técnica y operativa
+
+Control absoluto de versiones
+
+Auditoría completa
+
+Visualización geográfica
+
+🎯 2. OBJETIVO GENERAL DE LA APLICACIÓN
+
+Centralizar, proteger, auditar y gobernar la información documental y operativa de centros o edificios en México, permitiendo colaboración equitativa entre departamentos, con control de versiones, trazabilidad total, visualización geográfica y flujos formales de aprobación e incidentes.
+
+🧑‍💼 3. ROLES Y RESPONSABILIDADES
+Rol	Descripción	Permisos
+Super Admin	Dueño del sistema	Configuración global
+Admin / Gerente	Responsable por departamento	CRUD + aprobaciones
+Auxiliar	Apoyo operativo	CRUD sin eliminar
+Usuario Vista	Consulta	Ver / descargar
+Auditor	Cumplimiento	Solo lectura + logs
+
+🔒 Regla crítica:
+❌ No existe eliminación física
+✅ Todo es versionado
+
+🧩 4. MÓDULOS FUNCIONALES (DETALLADOS)
+4.1 Módulo: Gestión de Centros / Edificios
+Objetivo
+
+Administrar centros como entidad principal del sistema.
+
+Datos Clave
+
+ID Centro
+
+Nombre
+
+Tipo (Centro, Edificio, Planta, Sucursal)
+
+Estado
+
+Ciudad
+
+Dirección
+
+Coordenadas
+
+Estatus (Activo / Inactivo)
+
+User Stories
+
+US-CEN-01
+Como Super Admin
+Quiero crear un centro
+Para que los departamentos gestionen información.
+
+US-CEN-02
+Como usuario
+Quiero consultar centros
+Para acceder a su información documental.
+
+Criterios de Aceptación
+
+No se puede eliminar un centro
+
+Centro inactivo conserva documentos
+
+Todo centro debe tener ubicación válida
+
+4.2 Módulo: Mapa de la República Mexicana
+Objetivo
+
+Visualizar distribución geográfica y facilitar análisis regional.
+
+Funcionalidades
+
+Mapa interactivo de México
+
+Estados resaltados
+
+Filtros por estado / ciudad
+
+Acceso directo a centros
+
+User Stories
+
+US-MAP-01
+Como usuario
+Quiero ver estados con centros activos
+Para conocer cobertura nacional.
+
+US-MAP-02
+Como usuario
+Quiero filtrar por ciudad
+Para ubicar centros específicos.
+
+Criterios de Aceptación
+
+Estados sin centros no se resaltan
+
+Clic en estado → lista de centros
+
+Filtros combinables
+
+4.3 Módulo: Departamentos
+Objetivo
+
+Clasificar información por área funcional sin silos.
+
+Departamentos Ejemplo
+
+Jurídico
+
+Fiscal / Impuestos
+
+Operaciones
+
+Mantenimiento
+
+Finanzas
+
+Seguridad
+
+Administración
+
+User Stories
+
+US-DEP-01
+Como Super Admin
+Quiero crear departamentos
+Para organizar la información.
+
+US-DEP-02
+Como usuario
+Quiero ver documentos de todos los departamentos
+Para colaboración transversal.
+
+Criterios de Aceptación
+
+Todos los departamentos tienen visibilidad
+
+Permisos controlan acciones, no lectura
+
+Departamentos no eliminables
+
+4.4 Módulo: Gestión Documental (Versionado Obligatorio)
+Objetivo
+
+Resguardar documentos críticos con histórico completo.
+
+Tipos de Documentos
+
+Escrituras
+
+Predial
+
+Contratos
+
+Licencias
+
+Dictámenes
+
+Reportes técnicos
+
+User Stories
+
+US-DOC-01
+Como usuario autorizado
+Quiero subir documentos
+Para centralizar información.
+
+US-DOC-02
+Como usuario
+Quiero subir una nueva versión
+Para mantener el histórico.
+
+Criterios de Aceptación
+
+Ningún archivo se elimina
+
+Versionado automático
+
+Motivo del cambio obligatorio
+
+Versiones siempre descargables
+
+4.5 Módulo: Usuarios y Roles
+Objetivo
+
+Definir responsabilidades claras y seguras.
+
+User Stories
+
+US-ROL-01
+Como Admin
+Quiero asignar roles
+Para controlar permisos.
+
+US-ROL-02
+Como Auxiliar
+Quiero editar sin eliminar
+Para apoyar la operación.
+
+Criterios de Aceptación
+
+Rol Vista solo lectura
+
+Auxiliar no elimina
+
+Toda acción registrada
+
+4.6 Módulo: Reportes & Auditoría (Logs)
+Objetivo
+
+Auditar accesos, cambios y consultas.
+
+Logs Registrados
+
+Usuario
+
+Acción
+
+Centro
+
+Documento
+
+Fecha
+
+IP
+
+User Stories
+
+US-LOG-01
+Como Auditor
+Quiero ver logs por centro
+Para auditorías.
+
+US-LOG-02
+Como Admin
+Quiero ver quién consultó documentos
+Para control interno.
+
+Criterios de Aceptación
+
+Logs inmutables
+
+Accesos de lectura registrados
+
+Exportables (PDF / Excel)
+
+4.7 Módulo: Incidentes & Aprobaciones
+Objetivo
+
+Formalizar validaciones, cambios y excepciones.
+
+Tipos de Incidentes
+
+Solicitud de aprobación
+
+Documento observado
+
+Falta de información
+
+Cambio sensible
+
+Estados
+
+Pendiente
+
+Aprobado
+
+Rechazado
+
+Cerrado
+
+User Stories
+
+US-INC-01
+Como usuario
+Quiero levantar un incidente
+Para solicitar revisión.
+
+US-INC-02
+Como Gerente
+Quiero aprobar o rechazar
+Para controlar procesos.
+
+US-INC-03
+Como Auditor
+Quiero ver historial
+Para seguimiento.
+
+Criterios de Aceptación
+
+Incidentes no eliminables
+
+Comentarios obligatorios
+
+Vinculados a centro y documento
+
+Historial completo
+
+🔔 4.8 Módulo: Notificaciones
+Objetivo
+
+Comunicación automática y trazable.
+
+Eventos Notificados
+
+Nueva versión
+
+Incidente creado
+
+Incidente aprobado/rechazado
+
+Criterios de Aceptación
+
+Notificaciones internas
+
+Email opcional
+
+Configurables por usuario
+
+🔒 5. REGLAS GLOBALES DEL SISTEMA
+
+✔ Versionado obligatorio
+✔ Auditoría permanente
+✔ Sin eliminaciones
+✔ Visibilidad equitativa
+✔ Gobernanza documental
+✔ Cumplimiento legal
