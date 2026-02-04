@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { useParams, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,20 +9,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, Search, FileText, Clock, Download, History, Upload, Building2, FolderOpen, ArrowRight } from "lucide-react";
-import type { Document, DocumentVersion, Center, Department } from "@shared/schema";
+import { ArrowLeft, Building2, MapPin, FileText, Plus, History, Upload, Download, Clock, FolderOpen } from "lucide-react";
+import type { Center, Document, DocumentVersion, Department } from "@shared/schema";
 
 const documentFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   type: z.string().min(1, "Selecciona un tipo de documento"),
-  centerId: z.string().min(1, "Selecciona un centro"),
   departmentId: z.string().min(1, "Selecciona un departamento"),
 });
 
@@ -43,13 +42,14 @@ const documentTypes = [
 
 function DocumentFormDialog({ 
   open, 
-  onOpenChange 
+  onOpenChange,
+  centerId
 }: { 
   open: boolean; 
   onOpenChange: (open: boolean) => void;
+  centerId: string;
 }) {
   const { toast } = useToast();
-  const { data: centers = [] } = useQuery<Center[]>({ queryKey: ['/api/centers'] });
   const { data: departments = [] } = useQuery<Department[]>({ queryKey: ['/api/departments'] });
 
   const form = useForm<DocumentFormValues>({
@@ -57,17 +57,17 @@ function DocumentFormDialog({
     defaultValues: {
       name: "",
       type: "",
-      centerId: "",
       departmentId: "",
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: DocumentFormValues) => {
-      return apiRequest("POST", "/api/documents", data);
+      return apiRequest("POST", "/api/documents", { ...data, centerId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/documents'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/centers', centerId, 'documents'] });
       toast({ title: "Documento creado exitosamente" });
       onOpenChange(false);
       form.reset();
@@ -81,7 +81,7 @@ function DocumentFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Nuevo Documento</DialogTitle>
+          <DialogTitle>Nuevo Documento para este Centro</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
@@ -92,7 +92,7 @@ function DocumentFormDialog({
                 <FormItem>
                   <FormLabel>Nombre del Documento</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Escritura Centro Norte 2024" {...field} data-testid="input-document-name" />
+                    <Input placeholder="Ej: Escritura Pública 2024" {...field} data-testid="input-center-document-name" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,7 +107,7 @@ function DocumentFormDialog({
                   <FormLabel>Tipo de Documento</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger data-testid="select-document-type">
+                      <SelectTrigger data-testid="select-center-document-type">
                         <SelectValue placeholder="Seleccionar tipo" />
                       </SelectTrigger>
                     </FormControl>
@@ -124,36 +124,13 @@ function DocumentFormDialog({
 
             <FormField
               control={form.control}
-              name="centerId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Centro</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-document-center">
-                        <SelectValue placeholder="Seleccionar centro" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {centers.map((center) => (
-                        <SelectItem key={center.id} value={center.id}>{center.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="departmentId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Departamento Responsable</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger data-testid="select-document-department">
+                      <SelectTrigger data-testid="select-center-document-department">
                         <SelectValue placeholder="Seleccionar departamento" />
                       </SelectTrigger>
                     </FormControl>
@@ -172,7 +149,7 @@ function DocumentFormDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createMutation.isPending} data-testid="button-save-document">
+              <Button type="submit" disabled={createMutation.isPending} data-testid="button-save-center-document">
                 {createMutation.isPending ? 'Creando...' : 'Crear Documento'}
               </Button>
             </div>
@@ -309,7 +286,7 @@ function NewVersionDialog({
               value={changeReason}
               onChange={(e) => setChangeReason(e.target.value)}
               className="min-h-24"
-              data-testid="textarea-change-reason"
+              data-testid="textarea-version-change-reason"
             />
             <p className="text-xs text-muted-foreground">
               El motivo del cambio es obligatorio para mantener la trazabilidad del documento.
@@ -323,7 +300,7 @@ function NewVersionDialog({
             <Button 
               onClick={() => createVersionMutation.mutate()}
               disabled={changeReason.length < 10 || createVersionMutation.isPending}
-              data-testid="button-create-version"
+              data-testid="button-create-new-version"
             >
               {createVersionMutation.isPending ? 'Creando...' : 'Crear Versión'}
             </Button>
@@ -336,18 +313,14 @@ function NewVersionDialog({
 
 function DocumentCard({ 
   document, 
-  center,
   department,
   onViewHistory,
-  onNewVersion,
-  showCenter = false
+  onNewVersion
 }: { 
   document: Document;
-  center?: Center;
   department?: Department;
   onViewHistory: () => void;
   onNewVersion: () => void;
-  showCenter?: boolean;
 }) {
   const getTypeLabel = (type: string) => {
     return documentTypes.find(t => t.value === type)?.label || type;
@@ -367,20 +340,9 @@ function DocumentCard({
                 <Badge variant="outline" className="text-xs">{getTypeLabel(document.type)}</Badge>
                 <Badge variant="secondary" className="text-xs">v{document.currentVersion}</Badge>
               </div>
-              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground flex-wrap">
-                {showCenter && center && (
-                  <span className="flex items-center gap-1">
-                    <Building2 className="h-3 w-3" />
-                    {center.name}
-                  </span>
-                )}
-                {department && (
-                  <span className="flex items-center gap-1">
-                    <FolderOpen className="h-3 w-3" />
-                    {department.name}
-                  </span>
-                )}
-              </div>
+              {department && (
+                <p className="text-xs text-muted-foreground mt-2">{department.name}</p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
@@ -389,7 +351,7 @@ function DocumentCard({
               size="icon"
               onClick={onViewHistory}
               title="Ver historial"
-              data-testid={`button-history-${document.id}`}
+              data-testid={`button-doc-history-${document.id}`}
             >
               <History className="h-4 w-4" />
             </Button>
@@ -398,11 +360,16 @@ function DocumentCard({
               size="icon"
               onClick={onNewVersion}
               title="Nueva versión"
-              data-testid={`button-new-version-${document.id}`}
+              data-testid={`button-doc-new-version-${document.id}`}
             >
               <Upload className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" title="Descargar" data-testid={`button-download-${document.id}`}>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              title="Descargar"
+              data-testid={`button-doc-download-${document.id}`}
+            >
               <Download className="h-4 w-4" />
             </Button>
           </div>
@@ -412,161 +379,170 @@ function DocumentCard({
   );
 }
 
-function CenterDocumentsCard({
-  center,
-  documents,
-  departments,
-  onViewHistory,
-  onNewVersion
-}: {
-  center: Center;
-  documents: Document[];
-  departments: Department[];
-  onViewHistory: (doc: Document) => void;
-  onNewVersion: (doc: Document) => void;
-}) {
+export default function CenterDetailPage() {
+  const params = useParams();
+  const centerId = params.id as string;
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [historyDocument, setHistoryDocument] = useState<Document | null>(null);
+  const [versionDocument, setVersionDocument] = useState<Document | null>(null);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
+
+  const { data: center, isLoading: centerLoading } = useQuery<Center>({
+    queryKey: ['/api/centers', centerId],
+  });
+
+  const { data: allDocuments = [] } = useQuery<Document[]>({
+    queryKey: ['/api/documents'],
+  });
+
+  const { data: departments = [] } = useQuery<Department[]>({
+    queryKey: ['/api/departments'],
+  });
+
+  const centerDocuments = allDocuments.filter(doc => doc.centerId === centerId);
+  
+  const filteredDocuments = selectedDepartment === "all" 
+    ? centerDocuments 
+    : centerDocuments.filter(doc => doc.departmentId === selectedDepartment);
+
   const getDepartment = (departmentId: string) => {
     return departments.find(d => d.id === departmentId);
   };
 
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-4">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            {center.name}
-            <Badge variant="secondary" className="ml-2">{documents.length} docs</Badge>
-          </CardTitle>
-          <Link href={`/centers/${center.id}`}>
-            <Button variant="ghost" size="sm" data-testid={`button-view-center-docs-${center.id}`}>
-              Ver todo
-              <ArrowRight className="h-4 w-4 ml-1" />
+  const documentsByDepartment = departments.map(dept => ({
+    department: dept,
+    documents: centerDocuments.filter(doc => doc.departmentId === dept.id)
+  })).filter(group => group.documents.length > 0);
+
+  if (centerLoading) {
+    return (
+      <div className="flex-1 overflow-auto p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 bg-muted rounded" />
+          <div className="h-32 bg-muted rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!center) {
+    return (
+      <div className="flex-1 overflow-auto p-6">
+        <div className="text-center py-12">
+          <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
+          <p className="text-muted-foreground">Centro no encontrado</p>
+          <Link href="/centers">
+            <Button variant="outline" className="mt-4">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver a Centros
             </Button>
           </Link>
         </div>
-        <p className="text-sm text-muted-foreground">{center.city}, {center.state}</p>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 md:grid-cols-2">
-          {documents.slice(0, 4).map(doc => (
-            <DocumentCard
-              key={doc.id}
-              document={doc}
-              department={getDepartment(doc.departmentId)}
-              onViewHistory={() => onViewHistory(doc)}
-              onNewVersion={() => onNewVersion(doc)}
-            />
-          ))}
-        </div>
-        {documents.length > 4 && (
-          <div className="mt-3 text-center">
-            <Link href={`/centers/${center.id}`}>
-              <Button variant="outline" size="sm">
-                Ver {documents.length - 4} documentos más
-              </Button>
-            </Link>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-export default function DocumentsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [historyDocument, setHistoryDocument] = useState<Document | null>(null);
-  const [versionDocument, setVersionDocument] = useState<Document | null>(null);
-  const [selectedCenter, setSelectedCenter] = useState<string>("all");
-
-  const { data: documents = [], isLoading } = useQuery<Document[]>({ 
-    queryKey: ['/api/documents'] 
-  });
-
-  const { data: centers = [] } = useQuery<Center[]>({ 
-    queryKey: ['/api/centers'] 
-  });
-
-  const { data: departments = [] } = useQuery<Department[]>({ 
-    queryKey: ['/api/departments'] 
-  });
-
-  const getCenter = (centerId: string) => centers.find(c => c.id === centerId);
-  const getDepartment = (departmentId: string) => departments.find(d => d.id === departmentId);
-
-  const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.type.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCenter = selectedCenter === "all" || doc.centerId === selectedCenter;
-    return matchesSearch && matchesCenter;
-  });
-
-  const documentsByCenter = centers
-    .map(center => ({
-      center,
-      documents: documents.filter(doc => doc.centerId === center.id)
-    }))
-    .filter(group => group.documents.length > 0);
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 overflow-auto p-6" data-testid="page-documents">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Documentos</h1>
-          <p className="text-muted-foreground">Gestión documental organizada por centro</p>
+    <div className="flex-1 overflow-auto p-6" data-testid="page-center-detail">
+      <div className="mb-6">
+        <Link href="/centers">
+          <Button variant="ghost" size="sm" className="mb-4" data-testid="button-back-to-centers">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver a Centros
+          </Button>
+        </Link>
+        
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-12 w-12 rounded-md bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">{center.name}</h1>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>{center.city}, {center.state}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <Badge variant={center.status === 'active' ? 'default' : 'secondary'} className="text-sm">
+            {center.status === 'active' ? 'Activo' : 'Inactivo'}
+          </Badge>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)} data-testid="button-new-document">
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Documento
-        </Button>
       </div>
 
-      <Tabs defaultValue="by-center" className="w-full">
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Tipo</p>
+              <p className="font-medium capitalize">{center.type}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Dirección</p>
+              <p className="font-medium">{center.address}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Total Documentos</p>
+              <p className="font-medium">{centerDocuments.length}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Departamentos con Docs</p>
+              <p className="font-medium">{documentsByDepartment.length}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="by-department" className="w-full">
         <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
           <TabsList>
-            <TabsTrigger value="by-center" data-testid="tab-by-center">Por Centro</TabsTrigger>
-            <TabsTrigger value="all" data-testid="tab-all-documents">Todos</TabsTrigger>
+            <TabsTrigger value="by-department" data-testid="tab-by-department">Por Departamento</TabsTrigger>
+            <TabsTrigger value="all" data-testid="tab-all-docs">Todos los Documentos</TabsTrigger>
           </TabsList>
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar documentos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              data-testid="input-search-documents"
-            />
-          </div>
+          <Button onClick={() => setCreateDialogOpen(true)} data-testid="button-add-document">
+            <Plus className="h-4 w-4 mr-2" />
+            Agregar Documento
+          </Button>
         </div>
 
-        <TabsContent value="by-center" className="space-y-6">
-          {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-48 bg-muted animate-pulse rounded-md" />
-              ))}
-            </div>
-          ) : documentsByCenter.length > 0 ? (
-            documentsByCenter.map(({ center, documents: centerDocs }) => (
-              <CenterDocumentsCard
-                key={center.id}
-                center={center}
-                documents={centerDocs}
-                departments={departments}
-                onViewHistory={setHistoryDocument}
-                onNewVersion={setVersionDocument}
-              />
+        <TabsContent value="by-department" className="space-y-6">
+          {documentsByDepartment.length > 0 ? (
+            documentsByDepartment.map(({ department, documents }) => (
+              <Card key={department.id}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4" />
+                    {department.name}
+                    <Badge variant="secondary" className="ml-2">{documents.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {documents.map(doc => (
+                      <DocumentCard
+                        key={doc.id}
+                        document={doc}
+                        department={department}
+                        onViewHistory={() => setHistoryDocument(doc)}
+                        onNewVersion={() => setVersionDocument(doc)}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             ))
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
                 <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium text-muted-foreground">No hay documentos registrados</p>
-                <p className="text-sm text-muted-foreground mt-1">Crea tu primer documento para comenzar</p>
+                <p className="font-medium text-muted-foreground">No hay documentos para este centro</p>
+                <p className="text-sm text-muted-foreground mt-1">Agrega el primer documento para comenzar</p>
                 <Button className="mt-4" onClick={() => setCreateDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Crear Documento
+                  Agregar Documento
                 </Button>
               </CardContent>
             </Card>
@@ -579,51 +555,39 @@ export default function DocumentsPage() {
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <CardTitle className="text-base flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  {filteredDocuments.length} documentos
+                  Todos los Documentos
+                  <Badge variant="secondary">{filteredDocuments.length}</Badge>
                 </CardTitle>
-                <Select value={selectedCenter} onValueChange={setSelectedCenter}>
-                  <SelectTrigger className="w-56" data-testid="select-filter-center">
-                    <SelectValue placeholder="Filtrar por centro" />
+                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                  <SelectTrigger className="w-48" data-testid="select-filter-department">
+                    <SelectValue placeholder="Filtrar por departamento" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los centros</SelectItem>
-                    {centers.map((center) => (
-                      <SelectItem key={center.id} value={center.id}>{center.name}</SelectItem>
+                    <SelectItem value="all">Todos los departamentos</SelectItem>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-16 bg-muted animate-pulse rounded-md" />
-                  ))}
-                </div>
-              ) : filteredDocuments.length > 0 ? (
+              {filteredDocuments.length > 0 ? (
                 <div className="grid gap-3 md:grid-cols-2">
-                  {filteredDocuments.map((doc) => (
+                  {filteredDocuments.map(doc => (
                     <DocumentCard
                       key={doc.id}
                       document={doc}
-                      center={getCenter(doc.centerId)}
                       department={getDepartment(doc.departmentId)}
                       onViewHistory={() => setHistoryDocument(doc)}
                       onNewVersion={() => setVersionDocument(doc)}
-                      showCenter
                     />
                   ))}
                 </div>
               ) : (
-                <div className="py-12 text-center text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="font-medium">No se encontraron documentos</p>
-                  <p className="text-sm mt-1">Ajusta los filtros o crea un nuevo documento</p>
-                  <Button className="mt-4" onClick={() => setCreateDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Crear Documento
-                  </Button>
+                <div className="py-8 text-center text-muted-foreground">
+                  <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No hay documentos</p>
                 </div>
               )}
             </CardContent>
@@ -631,7 +595,11 @@ export default function DocumentsPage() {
         </TabsContent>
       </Tabs>
 
-      <DocumentFormDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+      <DocumentFormDialog 
+        open={createDialogOpen} 
+        onOpenChange={setCreateDialogOpen}
+        centerId={centerId}
+      />
       <VersionHistoryDialog 
         document={historyDocument} 
         open={!!historyDocument} 

@@ -10,6 +10,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import Dashboard from "@/pages/dashboard";
 import MexicoMap from "@/pages/mexico-map";
 import CentersPage from "@/pages/centers";
+import CenterDetailPage from "@/pages/center-detail";
 import DocumentsPage from "@/pages/documents";
 import DepartmentsPage from "@/pages/departments";
 import UsersPage from "@/pages/users";
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/map" component={MexicoMap} />
       <Route path="/centers" component={CentersPage} />
+      <Route path="/centers/:id" component={CenterDetailPage} />
       <Route path="/documents" component={DocumentsPage} />
       <Route path="/departments" component={DepartmentsPage} />
       <Route path="/users" component={UsersPage} />
