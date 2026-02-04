@@ -7,7 +7,8 @@ import {
   insertDocumentSchema,
   insertDocumentVersionSchema,
   insertIncidentSchema,
-  insertNotificationSchema
+  insertNotificationSchema,
+  insertUserSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -105,6 +106,95 @@ export async function registerRoutes(
       res.status(201).json(department);
     } catch (error) {
       res.status(500).json({ error: "Failed to create department" });
+    }
+  });
+
+  // Users
+  app.get("/api/users", async (req: Request, res: Response) => {
+    try {
+      const users = await storage.getUsers();
+      await logAudit(req, "list", "user", null, null, `Listado de ${users.length} usuarios`);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/users/:id", async (req: Request, res: Response) => {
+    try {
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      await logAudit(req, "view", "user", user.id, user.fullName);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user" });
+    }
+  });
+
+  app.post("/api/users", async (req: Request, res: Response) => {
+    try {
+      const parsed = insertUserSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      
+      const existingUser = await storage.getUserByUsername(parsed.data.username);
+      if (existingUser) {
+        return res.status(400).json({ error: "El nombre de usuario ya existe" });
+      }
+      
+      const user = await storage.createUser(parsed.data);
+      await logAudit(req, "create", "user", user.id, user.fullName, `Rol: ${user.role}`);
+      res.status(201).json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+
+  const updateUserSchema = z.object({
+    username: z.string().min(3).optional(),
+    password: z.string().min(6).optional(),
+    fullName: z.string().min(2).optional(),
+    email: z.string().email().optional(),
+    role: z.enum(["super_admin", "admin", "auxiliar", "viewer", "auditor"]).optional(),
+    departmentId: z.string().nullable().optional(),
+    isActive: z.boolean().optional(),
+  }).strict();
+
+  app.patch("/api/users/:id", async (req: Request, res: Response) => {
+    try {
+      const existingUser = await storage.getUser(req.params.id);
+      if (!existingUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const parsed = updateUserSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      
+      const updateData = parsed.data;
+      
+      if (updateData.username && updateData.username !== existingUser.username) {
+        const usernameExists = await storage.getUserByUsername(updateData.username);
+        if (usernameExists) {
+          return res.status(400).json({ error: "El nombre de usuario ya existe" });
+        }
+      }
+      
+      const user = await storage.updateUser(req.params.id, updateData);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const action = updateData.isActive === false ? "deactivate" : 
+                     updateData.isActive === true ? "activate" : "update";
+      await logAudit(req, action, "user", user.id, user.fullName, `Rol: ${user.role}`);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user" });
     }
   });
 

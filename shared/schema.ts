@@ -20,7 +20,9 @@ export const users = pgTable("users", {
   email: text("email").notNull(),
   role: userRoleEnum("role").notNull().default("viewer"),
   departmentId: varchar("department_id"),
+  isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Departments table
