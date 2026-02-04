@@ -40,6 +40,8 @@ export interface IStorage {
   getDocumentVersions(documentId: string): Promise<DocumentVersion[]>;
   getDocumentVersion(id: string): Promise<DocumentVersion | undefined>;
   getPendingVersions(departmentId?: string): Promise<DocumentVersion[]>;
+  getApprovedVersions(departmentId?: string): Promise<DocumentVersion[]>;
+  getRejectedVersions(departmentId?: string): Promise<DocumentVersion[]>;
   createDocumentVersion(version: InsertDocumentVersion): Promise<DocumentVersion>;
   approveVersion(id: string, approvedBy: string): Promise<DocumentVersion | undefined>;
   rejectVersion(id: string, rejectedBy: string, reason: string): Promise<DocumentVersion | undefined>;
@@ -170,6 +172,40 @@ export class DatabaseStorage implements IStorage {
     }
     return db.select().from(documentVersions)
       .where(eq(documentVersions.approvalStatus, "pending"))
+      .orderBy(desc(documentVersions.uploadedAt));
+  }
+
+  async getApprovedVersions(departmentId?: string): Promise<DocumentVersion[]> {
+    if (departmentId) {
+      const deptDocs = await db.select().from(documents).where(eq(documents.departmentId, departmentId));
+      const docIds = deptDocs.map(d => d.id);
+      if (docIds.length === 0) return [];
+      
+      const allApproved = await db.select().from(documentVersions)
+        .where(eq(documentVersions.approvalStatus, "approved"))
+        .orderBy(desc(documentVersions.approvedAt));
+      
+      return allApproved.filter(v => docIds.includes(v.documentId));
+    }
+    return db.select().from(documentVersions)
+      .where(eq(documentVersions.approvalStatus, "approved"))
+      .orderBy(desc(documentVersions.approvedAt));
+  }
+
+  async getRejectedVersions(departmentId?: string): Promise<DocumentVersion[]> {
+    if (departmentId) {
+      const deptDocs = await db.select().from(documents).where(eq(documents.departmentId, departmentId));
+      const docIds = deptDocs.map(d => d.id);
+      if (docIds.length === 0) return [];
+      
+      const allRejected = await db.select().from(documentVersions)
+        .where(eq(documentVersions.approvalStatus, "rejected"))
+        .orderBy(desc(documentVersions.uploadedAt));
+      
+      return allRejected.filter(v => docIds.includes(v.documentId));
+    }
+    return db.select().from(documentVersions)
+      .where(eq(documentVersions.approvalStatus, "rejected"))
       .orderBy(desc(documentVersions.uploadedAt));
   }
 

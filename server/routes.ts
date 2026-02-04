@@ -199,6 +199,26 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/approved-versions", async (req: Request, res: Response) => {
+    try {
+      const departmentId = req.query.departmentId as string | undefined;
+      const approvedVersions = await storage.getApprovedVersions(departmentId);
+      res.json(approvedVersions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch approved versions" });
+    }
+  });
+
+  app.get("/api/rejected-versions", async (req: Request, res: Response) => {
+    try {
+      const departmentId = req.query.departmentId as string | undefined;
+      const rejectedVersions = await storage.getRejectedVersions(departmentId);
+      res.json(rejectedVersions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch rejected versions" });
+    }
+  });
+
   app.post("/api/versions/:id/approve", async (req: Request, res: Response) => {
     try {
       const version = await storage.approveVersion(req.params.id, "Admin Usuario");
