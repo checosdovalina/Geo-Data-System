@@ -27,7 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 const mainNavItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Mapa de México", url: "/map", icon: Map },
   { title: "Centros", url: "/centers", icon: Building2 },
   { title: "Documentos", url: "/documents", icon: FileText },
