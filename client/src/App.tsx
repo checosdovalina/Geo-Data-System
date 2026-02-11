@@ -18,6 +18,7 @@ import UsersPage from "@/pages/users";
 import IncidentsPage from "@/pages/incidents";
 import AuditPage from "@/pages/audit";
 import NotificationsPage from "@/pages/notifications";
+import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/incidents" component={IncidentsPage} />
       <Route path="/audit" component={AuditPage} />
       <Route path="/notifications" component={NotificationsPage} />
+      <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
   );

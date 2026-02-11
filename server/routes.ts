@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { 
   insertCenterSchema, 
   insertDepartmentSchema, 
@@ -34,6 +35,33 @@ export async function registerRoutes(
       console.error("Failed to create audit log:", error);
     }
   }
+
+  // Object Storage routes for file uploads
+  registerObjectStorageRoutes(app);
+
+  // Settings
+  app.get("/api/settings", async (req: Request, res: Response) => {
+    try {
+      const settings = await storage.getSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
+  app.post("/api/settings", async (req: Request, res: Response) => {
+    try {
+      const { key, value } = req.body;
+      if (!key || value === undefined) {
+        return res.status(400).json({ error: "key and value are required" });
+      }
+      const setting = await storage.upsertSetting(key, value);
+      await logAudit(req, "update", "setting", setting.id, key, `Configuración actualizada: ${key}`);
+      res.json(setting);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to save setting" });
+    }
+  });
 
   // Centers
   app.get("/api/centers", async (req: Request, res: Response) => {

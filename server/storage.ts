@@ -7,7 +7,8 @@ import {
   type AuditLog, type InsertAuditLog,
   type Incident, type InsertIncident,
   type Notification, type InsertNotification,
-  users, centers, departments, documents, documentVersions, auditLogs, incidents, notifications
+  type SystemSetting,
+  users, centers, departments, documents, documentVersions, auditLogs, incidents, notifications, systemSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -62,6 +63,11 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationAsRead(id: string): Promise<Notification | undefined>;
   markAllNotificationsAsRead(userId?: string): Promise<void>;
+  
+  // Settings
+  getSettings(): Promise<SystemSetting[]>;
+  getSetting(key: string): Promise<SystemSetting | undefined>;
+  upsertSetting(key: string, value: string): Promise<SystemSetting>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -329,6 +335,29 @@ export class DatabaseStorage implements IStorage {
     } else {
       await db.update(notifications).set({ read: true });
     }
+  }
+
+  // Settings
+  async getSettings(): Promise<SystemSetting[]> {
+    return db.select().from(systemSettings);
+  }
+
+  async getSetting(key: string): Promise<SystemSetting | undefined> {
+    const [setting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key));
+    return setting;
+  }
+
+  async upsertSetting(key: string, value: string): Promise<SystemSetting> {
+    const existing = await this.getSetting(key);
+    if (existing) {
+      const [updated] = await db.update(systemSettings)
+        .set({ value, updatedAt: new Date() })
+        .where(eq(systemSettings.key, key))
+        .returning();
+      return updated;
+    }
+    const [created] = await db.insert(systemSettings).values({ key, value }).returning();
+    return created;
   }
 }
 

@@ -78,6 +78,7 @@ export const documentVersions = pgTable("document_versions", {
   fileName: text("file_name").notNull(),
   fileSize: integer("file_size").notNull(),
   mimeType: text("mime_type").notNull(),
+  filePath: text("file_path"),
   changeReason: text("change_reason").notNull(),
   approvalStatus: approvalStatusEnum("approval_status").notNull().default("pending"),
   approvedBy: varchar("approved_by"),
@@ -85,6 +86,14 @@ export const documentVersions = pgTable("document_versions", {
   rejectionReason: text("rejection_reason"),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
   uploadedBy: varchar("uploaded_by"),
+});
+
+// Settings table for system configuration (e.g. Google Drive sync)
+export const systemSettings = pgTable("system_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Audit logs table
@@ -133,7 +142,7 @@ export const notifications = pgTable("notifications", {
 });
 
 // Insert schemas
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertDepartmentSchema = createInsertSchema(departments).omit({ id: true, createdAt: true });
 export const insertCenterSchema = createInsertSchema(centers).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, createdAt: true, currentVersion: true });
@@ -142,6 +151,7 @@ export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: tru
 export const insertIncidentSchema = createInsertSchema(incidents).omit({ id: true, createdAt: true, updatedAt: true, status: true });
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true, read: true });
 export const insertMexicanStateSchema = createInsertSchema(mexicanStates).omit({ id: true });
+export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit({ id: true, updatedAt: true });
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -162,3 +172,5 @@ export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertMexicanState = z.infer<typeof insertMexicanStateSchema>;
 export type MexicanState = typeof mexicanStates.$inferSelect;
+export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
+export type SystemSetting = typeof systemSettings.$inferSelect;

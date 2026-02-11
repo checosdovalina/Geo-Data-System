@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   FolderOpen,
   CheckCircle2,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -122,6 +123,18 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={location === "/settings"}>
+              <Link href="/settings" data-testid="nav-settings">
+                <Settings className="h-4 w-4" />
+                <span>Configuración</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">

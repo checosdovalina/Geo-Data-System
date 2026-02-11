@@ -8,12 +8,14 @@ MVP implementation is complete with the following modules:
 - Dashboard with statistics overview
 - Interactive Mexico map for geographic visualization
 - Centers/Buildings management (CRUD)
-- Document management with version control
+- Document management with version control and real file uploads
 - Departments organization
-- Users and roles display
+- Users and roles management (CRUD with activate/deactivate)
 - Incidents and approvals workflow
 - Complete audit logging
 - Notifications system
+- System settings page (storage configuration, Google Drive integration option)
+- File upload via Replit App Storage with presigned URLs
 
 ## Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite

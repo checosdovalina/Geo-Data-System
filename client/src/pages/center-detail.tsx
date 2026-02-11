@@ -1,23 +1,25 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ArrowLeft, Building2, MapPin, FileText, Plus, History, Upload, Download, Clock, FolderOpen } from "lucide-react";
+import { ArrowLeft, Building2, MapPin, FileText, Plus, History, Upload, Download, Clock, FolderOpen, File, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import type { Center, Document, DocumentVersion, Department } from "@shared/schema";
+import { useUpload } from "@/hooks/use-upload";
 
 const documentFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -40,6 +42,12 @@ const documentTypes = [
   { value: "otro", label: "Otro" },
 ];
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / 1048576).toFixed(1) + " MB";
+}
+
 function DocumentFormDialog({ 
   open, 
   onOpenChange,
@@ -51,6 +59,9 @@ function DocumentFormDialog({
 }) {
   const { toast } = useToast();
   const { data: departments = [] } = useQuery<Department[]>({ queryKey: ['/api/departments'] });
+  const [selectedFile, setSelectedFile] = useState<globalThis.File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, isUploading, progress } = useUpload({});
 
   const form = useForm<DocumentFormValues>({
     resolver: zodResolver(documentFormSchema),
@@ -63,28 +74,104 @@ function DocumentFormDialog({
 
   const createMutation = useMutation({
     mutationFn: async (data: DocumentFormValues) => {
-      return apiRequest("POST", "/api/documents", { ...data, centerId });
+      let filePath: string | null = null;
+      let fileName = "documento_v1.pdf";
+      let fileSize = 0;
+      let mimeType = "application/pdf";
+
+      if (selectedFile) {
+        const uploadResult = await uploadFile(selectedFile);
+        if (uploadResult) {
+          filePath = uploadResult.objectPath;
+          fileName = selectedFile.name;
+          fileSize = selectedFile.size;
+          mimeType = selectedFile.type || "application/octet-stream";
+        }
+      }
+
+      const docResponse = await apiRequest("POST", "/api/documents", { ...data, centerId });
+      const doc = await docResponse.json();
+
+      await apiRequest("POST", `/api/documents/${doc.id}/versions`, {
+        documentId: doc.id,
+        version: 1,
+        fileName,
+        fileSize,
+        mimeType,
+        filePath,
+        changeReason: "Versión inicial del documento",
+      });
+
+      return doc;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/documents'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/centers', centerId, 'documents'] });
       toast({ title: "Documento creado exitosamente" });
       onOpenChange(false);
       form.reset();
+      setSelectedFile(null);
     },
     onError: () => {
       toast({ title: "Error al crear el documento", variant: "destructive" });
     },
   });
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      if (!form.getValues("name")) {
+        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+        form.setValue("name", nameWithoutExt);
+      }
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { setSelectedFile(null); } onOpenChange(v); }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Nuevo Documento para este Centro</DialogTitle>
+          <DialogDescription>Sube un archivo desde tu computadora y completa la información</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Archivo</label>
+              <div 
+                className="border-2 border-dashed rounded-md p-6 text-center cursor-pointer hover-elevate"
+                onClick={() => fileInputRef.current?.click()}
+                data-testid="upload-dropzone"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"
+                  data-testid="input-file-upload"
+                />
+                {selectedFile ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <File className="h-8 w-8 text-primary" />
+                    <div className="text-left">
+                      <p className="font-medium text-sm">{selectedFile.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Haz clic para seleccionar un archivo</p>
+                    <p className="text-xs text-muted-foreground mt-1">PDF, Word, Excel, Imagen o ZIP</p>
+                  </div>
+                )}
+              </div>
+              {isUploading && (
+                <Progress value={progress} className="h-2" />
+              )}
+            </div>
+
             <FormField
               control={form.control}
               name="name"
@@ -149,8 +236,9 @@ function DocumentFormDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createMutation.isPending} data-testid="button-save-center-document">
-                {createMutation.isPending ? 'Creando...' : 'Crear Documento'}
+              <Button type="submit" disabled={createMutation.isPending || isUploading} data-testid="button-save-center-document">
+                {(createMutation.isPending || isUploading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {createMutation.isPending ? 'Subiendo...' : 'Crear Documento'}
               </Button>
             </div>
           </form>
@@ -176,6 +264,17 @@ function VersionHistoryDialog({
 
   if (!document) return null;
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <Badge variant="default"><CheckCircle2 className="h-3 w-3 mr-1" />Aprobado</Badge>;
+      case "rejected":
+        return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Rechazado</Badge>;
+      default:
+        return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>;
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -184,6 +283,7 @@ function VersionHistoryDialog({
             <History className="h-5 w-5" />
             Historial de Versiones - {document.name}
           </DialogTitle>
+          <DialogDescription>Todas las versiones del documento</DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-96">
           {versions.length > 0 ? (
@@ -192,19 +292,32 @@ function VersionHistoryDialog({
                 <div key={version.id} className="p-4 rounded-md border hover-elevate">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <Badge variant="outline">v{version.version}</Badge>
                         <span className="text-sm font-medium">{version.fileName}</span>
+                        {getStatusBadge(version.approvalStatus)}
                       </div>
                       <p className="text-sm text-muted-foreground">{version.changeReason}</p>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {new Date(version.uploadedAt).toLocaleString('es-MX')}
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(version.uploadedAt).toLocaleString('es-MX')}
+                        </span>
+                        {version.fileSize > 0 && (
+                          <span>{formatFileSize(version.fileSize)}</span>
+                        )}
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" data-testid={`button-download-version-${version.id}`}>
-                      <Download className="h-4 w-4" />
-                    </Button>
+                    {version.filePath && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => window.open(version.filePath!, '_blank')}
+                        data-testid={`button-download-version-${version.id}`}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -232,24 +345,45 @@ function NewVersionDialog({
 }) {
   const { toast } = useToast();
   const [changeReason, setChangeReason] = useState("");
+  const [selectedFile, setSelectedFile] = useState<globalThis.File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadFile, isUploading, progress } = useUpload({});
 
   const createVersionMutation = useMutation({
     mutationFn: async () => {
+      let filePath: string | null = null;
+      let fileName = `documento_v${(document?.currentVersion || 0) + 1}.pdf`;
+      let fileSize = 0;
+      let mimeType = "application/pdf";
+
+      if (selectedFile) {
+        const uploadResult = await uploadFile(selectedFile);
+        if (uploadResult) {
+          filePath = uploadResult.objectPath;
+          fileName = selectedFile.name;
+          fileSize = selectedFile.size;
+          mimeType = selectedFile.type || "application/octet-stream";
+        }
+      }
+
       return apiRequest("POST", `/api/documents/${document?.id}/versions`, {
         documentId: document?.id,
         version: (document?.currentVersion || 0) + 1,
-        fileName: `documento_v${(document?.currentVersion || 0) + 1}.pdf`,
-        fileSize: 1024000,
-        mimeType: "application/pdf",
+        fileName,
+        fileSize,
+        mimeType,
+        filePath,
         changeReason,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/documents'] });
       queryClient.invalidateQueries({ queryKey: ['/api/documents', document?.id, 'versions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/pending-approvals'] });
       toast({ title: "Nueva versión creada exitosamente" });
       onOpenChange(false);
       setChangeReason("");
+      setSelectedFile(null);
     },
     onError: () => {
       toast({ title: "Error al crear la versión", variant: "destructive" });
@@ -258,14 +392,22 @@ function NewVersionDialog({
 
   if (!document) return null;
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { setSelectedFile(null); setChangeReason(""); } onOpenChange(v); }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
             Nueva Versión - {document.name}
           </DialogTitle>
+          <DialogDescription>Sube una nueva versión del documento</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="p-3 rounded-md bg-muted">
@@ -277,6 +419,42 @@ function NewVersionDialog({
               <span className="text-muted-foreground">Nueva versión:</span>{" "}
               <Badge>v{document.currentVersion + 1}</Badge>
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Archivo *</label>
+            <div 
+              className="border-2 border-dashed rounded-md p-6 text-center cursor-pointer hover-elevate"
+              onClick={() => fileInputRef.current?.click()}
+              data-testid="upload-version-dropzone"
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleFileSelect}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"
+                data-testid="input-version-file-upload"
+              />
+              {selectedFile ? (
+                <div className="flex items-center justify-center gap-3">
+                  <File className="h-8 w-8 text-primary" />
+                  <div className="text-left">
+                    <p className="font-medium text-sm">{selectedFile.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Haz clic para seleccionar un archivo</p>
+                  <p className="text-xs text-muted-foreground mt-1">PDF, Word, Excel, Imagen o ZIP</p>
+                </div>
+              )}
+            </div>
+            {isUploading && (
+              <Progress value={progress} className="h-2" />
+            )}
           </div>
 
           <div className="space-y-2">
@@ -299,10 +477,11 @@ function NewVersionDialog({
             </Button>
             <Button 
               onClick={() => createVersionMutation.mutate()}
-              disabled={changeReason.length < 10 || createVersionMutation.isPending}
+              disabled={changeReason.length < 10 || !selectedFile || createVersionMutation.isPending || isUploading}
               data-testid="button-create-new-version"
             >
-              {createVersionMutation.isPending ? 'Creando...' : 'Crear Versión'}
+              {(createVersionMutation.isPending || isUploading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {createVersionMutation.isPending ? 'Subiendo...' : 'Crear Versión'}
             </Button>
           </div>
         </div>
@@ -363,14 +542,6 @@ function DocumentCard({
               data-testid={`button-doc-new-version-${document.id}`}
             >
               <Upload className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              title="Descargar"
-              data-testid={`button-doc-download-${document.id}`}
-            >
-              <Download className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -600,14 +771,14 @@ export default function CenterDetailPage() {
         onOpenChange={setCreateDialogOpen}
         centerId={centerId}
       />
-      <VersionHistoryDialog 
-        document={historyDocument} 
-        open={!!historyDocument} 
+      <VersionHistoryDialog
+        document={historyDocument}
+        open={!!historyDocument}
         onOpenChange={(open) => !open && setHistoryDocument(null)}
       />
-      <NewVersionDialog 
-        document={versionDocument} 
-        open={!!versionDocument} 
+      <NewVersionDialog
+        document={versionDocument}
+        open={!!versionDocument}
         onOpenChange={(open) => !open && setVersionDocument(null)}
       />
     </div>
