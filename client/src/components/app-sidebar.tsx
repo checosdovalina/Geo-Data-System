@@ -11,6 +11,7 @@ import {
   FolderOpen,
   CheckCircle2,
   Settings,
+  LogOut,
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,6 +26,8 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -47,6 +50,7 @@ const operationsItems = [
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { user, logout } = useAuth();
 
   return (
     <Sidebar>
@@ -141,9 +145,26 @@ export function AppSidebar() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">Admin Usuario</p>
-            <p className="text-xs text-muted-foreground">Super Admin</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate" data-testid="text-current-user-name">
+              {user?.fullName || "Usuario"}
+            </p>
+            <p className="text-xs text-muted-foreground" data-testid="text-current-user-role">
+              {user?.role === "super_admin" ? "Super Admin" :
+               user?.role === "admin" ? "Administrador" :
+               user?.role === "auxiliar" ? "Auxiliar" :
+               user?.role === "viewer" ? "Lector" :
+               user?.role === "auditor" ? "Auditor" : ""}
+            </p>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => logout.mutate()}
+            className="shrink-0"
+            data-testid="button-logout"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>

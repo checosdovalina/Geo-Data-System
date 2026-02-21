@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,15 +13,14 @@ import { Building2, Loader2, ArrowLeft } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Ingresa un correo electrónico válido"),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  password: z.string().min(1, "La contraseña es requerida"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -32,16 +31,15 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      toast({ title: "Bienvenido a GeoDoc Center" });
-      setLocation("/dashboard");
-    } catch {
-      toast({ title: "Error al iniciar sesión", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
+    login.mutate(data, {
+      onSuccess: () => {
+        toast({ title: "Bienvenido a GeoDoc Center" });
+      },
+      onError: (error: any) => {
+        const message = error?.message || "Credenciales incorrectas";
+        toast({ title: "Error al iniciar sesión", description: message, variant: "destructive" });
+      },
+    });
   };
 
   return (
@@ -85,7 +83,7 @@ export default function LoginPage() {
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="usuario@empresa.com"
+                            placeholder="admin@geodoc.mx"
                             {...field}
                             data-testid="input-login-email"
                           />
@@ -114,9 +112,9 @@ export default function LoginPage() {
                     )}
                   />
 
-                  <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-login-submit">
-                    {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    {isLoading ? "Ingresando..." : "Iniciar Sesión"}
+                  <Button type="submit" className="w-full" disabled={login.isPending} data-testid="button-login-submit">
+                    {login.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {login.isPending ? "Ingresando..." : "Iniciar Sesión"}
                   </Button>
                 </form>
               </Form>

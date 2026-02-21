@@ -12,6 +12,7 @@ import {
   insertUserSchema
 } from "@shared/schema";
 import { z } from "zod";
+import bcrypt from "bcrypt";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -22,8 +23,8 @@ export async function registerRoutes(
   async function logAudit(req: Request, action: string, entityType: string, entityId: string | null, entityName: string | null, details?: string) {
     try {
       await storage.createAuditLog({
-        userId: null,
-        userName: "Admin Usuario",
+        userId: req.session?.userId || null,
+        userName: req.session?.fullName || "Sistema",
         action,
         entityType,
         entityId,
@@ -38,6 +39,78 @@ export async function registerRoutes(
 
   // Object Storage routes for file uploads
   registerObjectStorageRoutes(app);
+
+  // Auth routes
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json({ error: "Correo y contraseña son requeridos" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ error: "Credenciales incorrectas" });
+      }
+
+      if (!user.isActive) {
+        return res.status(401).json({ error: "Tu cuenta está desactivada. Contacta al administrador." });
+      }
+
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
+        return res.status(401).json({ error: "Credenciales incorrectas" });
+      }
+
+      req.session.userId = user.id;
+      req.session.username = user.username;
+      req.session.fullName = user.fullName;
+      req.session.role = user.role;
+
+      await logAudit(req, "login", "user", user.id, user.fullName, "Inicio de sesión exitoso");
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Error al iniciar sesión" });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const fullName = req.session.fullName;
+      if (userId) {
+        await logAudit(req, "logout", "user", userId, fullName || null, "Cierre de sesión");
+      }
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ error: "Error al cerrar sesión" });
+        }
+        res.clearCookie("connect.sid");
+        res.json({ success: true });
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error al cerrar sesión" });
+    }
+  });
+
+  app.get("/api/auth/me", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "No autenticado" });
+      }
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ error: "Usuario no encontrado" });
+      }
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener sesión" });
+    }
+  });
 
   // Settings
   app.get("/api/settings", async (req: Request, res: Response) => {

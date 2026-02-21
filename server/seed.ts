@@ -4,10 +4,10 @@ import {
   auditLogs, incidents, notifications 
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
+import bcrypt from "bcrypt";
 
 export async function seedDatabase() {
   try {
-    // Check if data already exists
     const existingCenters = await db.select().from(centers).limit(1);
     if (existingCenters.length > 0) {
       console.log("Database already seeded, skipping...");
@@ -16,7 +16,6 @@ export async function seedDatabase() {
 
     console.log("Seeding database...");
 
-    // Seed Departments
     const deptData = [
       { name: "Jurídico", description: "Gestión de asuntos legales y contratos", icon: "scale" },
       { name: "Fiscal / Impuestos", description: "Control de obligaciones fiscales y tributarias", icon: "calculator" },
@@ -30,13 +29,13 @@ export async function seedDatabase() {
     const insertedDepts = await db.insert(departments).values(deptData).returning();
     console.log(`Inserted ${insertedDepts.length} departments`);
 
-    // Seed Users
+    const hashedPassword = await bcrypt.hash("Admin123!", 10);
     const userData = [
-      { username: "admin", password: "admin123", fullName: "Carlos Rodríguez", email: "carlos.rodriguez@geodoc.mx", role: "super_admin" as const, departmentId: insertedDepts[0].id },
-      { username: "legal_mgr", password: "legal123", fullName: "María García López", email: "maria.garcia@geodoc.mx", role: "admin" as const, departmentId: insertedDepts[0].id },
-      { username: "fiscal_aux", password: "fiscal123", fullName: "José Hernández", email: "jose.hernandez@geodoc.mx", role: "auxiliar" as const, departmentId: insertedDepts[1].id },
-      { username: "viewer1", password: "viewer123", fullName: "Ana Martínez", email: "ana.martinez@geodoc.mx", role: "viewer" as const, departmentId: insertedDepts[2].id },
-      { username: "auditor1", password: "auditor123", fullName: "Roberto Sánchez", email: "roberto.sanchez@geodoc.mx", role: "auditor" as const, departmentId: null },
+      { username: "admin", password: hashedPassword, fullName: "Carlos Rodríguez", email: "admin@geodoc.mx", role: "super_admin" as const, departmentId: insertedDepts[0].id },
+      { username: "legal_mgr", password: await bcrypt.hash("Legal123!", 10), fullName: "María García López", email: "maria.garcia@geodoc.mx", role: "admin" as const, departmentId: insertedDepts[0].id },
+      { username: "fiscal_aux", password: await bcrypt.hash("Fiscal123!", 10), fullName: "José Hernández", email: "jose.hernandez@geodoc.mx", role: "auxiliar" as const, departmentId: insertedDepts[1].id },
+      { username: "viewer1", password: await bcrypt.hash("Viewer123!", 10), fullName: "Ana Martínez", email: "ana.martinez@geodoc.mx", role: "viewer" as const, departmentId: insertedDepts[2].id },
+      { username: "auditor1", password: await bcrypt.hash("Auditor123!", 10), fullName: "Roberto Sánchez", email: "roberto.sanchez@geodoc.mx", role: "auditor" as const, departmentId: null },
     ];
 
     const insertedUsers = await db.insert(users).values(userData).returning();
