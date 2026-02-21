@@ -36,7 +36,11 @@ export default function LoginPage() {
         toast({ title: "Bienvenido a GeoDoc Center" });
       },
       onError: (error: any) => {
-        const message = error?.message || "Credenciales incorrectas";
+        let message = "Credenciales incorrectas. Verifica tu correo y contraseña.";
+        try {
+          const parsed = JSON.parse(error?.message?.replace(/^\d+:\s*/, "") || "{}");
+          if (parsed.error) message = parsed.error;
+        } catch {}
         toast({ title: "Error al iniciar sesión", description: message, variant: "destructive" });
       },
     });
@@ -119,9 +123,14 @@ export default function LoginPage() {
                 </form>
               </Form>
 
-              <div className="mt-6 pt-4 border-t text-center">
-                <p className="text-xs text-muted-foreground">
-                  Contacta al administrador del sistema si no tienes acceso o necesitas restablecer tu contraseña.
+              <div className="mt-6 pt-4 border-t space-y-3">
+                <div className="bg-muted/50 rounded-md p-3">
+                  <p className="text-xs font-medium mb-1">Credenciales de demostración:</p>
+                  <p className="text-xs text-muted-foreground">Correo: <span className="font-mono select-all">admin@geodoc.mx</span></p>
+                  <p className="text-xs text-muted-foreground">Contraseña: <span className="font-mono select-all">Admin123!</span></p>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Contacta al administrador del sistema si no tienes acceso.
                 </p>
               </div>
             </CardContent>
