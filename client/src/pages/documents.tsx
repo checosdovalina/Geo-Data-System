@@ -16,8 +16,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, Search, FileText, Clock, Download, History, Upload, Building2, FolderOpen, ArrowRight } from "lucide-react";
+import { Plus, Search, FileText, Clock, Download, History, Upload, Building2, FolderOpen, ArrowRight, Eye } from "lucide-react";
 import type { Document, DocumentVersion, Center, Department } from "@shared/schema";
+import { DocumentPreviewDialog } from "@/components/document-preview-dialog";
 
 const documentFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -340,6 +341,7 @@ function DocumentCard({
   department,
   onViewHistory,
   onNewVersion,
+  onPreview,
   showCenter = false
 }: { 
   document: Document;
@@ -347,6 +349,7 @@ function DocumentCard({
   department?: Department;
   onViewHistory: () => void;
   onNewVersion: () => void;
+  onPreview: () => void;
   showCenter?: boolean;
 }) {
   const getTypeLabel = (type: string) => {
@@ -387,6 +390,15 @@ function DocumentCard({
             <Button 
               variant="ghost" 
               size="icon"
+              onClick={onPreview}
+              title="Ver / Descargar"
+              data-testid={`button-preview-${document.id}`}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
               onClick={onViewHistory}
               title="Ver historial"
               data-testid={`button-history-${document.id}`}
@@ -402,9 +414,6 @@ function DocumentCard({
             >
               <Upload className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" title="Descargar" data-testid={`button-download-${document.id}`}>
-              <Download className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </CardContent>
@@ -417,13 +426,15 @@ function CenterDocumentsCard({
   documents,
   departments,
   onViewHistory,
-  onNewVersion
+  onNewVersion,
+  onPreview
 }: {
   center: Center;
   documents: Document[];
   departments: Department[];
   onViewHistory: (doc: Document) => void;
   onNewVersion: (doc: Document) => void;
+  onPreview: (doc: Document) => void;
 }) {
   const getDepartment = (departmentId: string) => {
     return departments.find(d => d.id === departmentId);
@@ -456,6 +467,7 @@ function CenterDocumentsCard({
               department={getDepartment(doc.departmentId)}
               onViewHistory={() => onViewHistory(doc)}
               onNewVersion={() => onNewVersion(doc)}
+              onPreview={() => onPreview(doc)}
             />
           ))}
         </div>
@@ -478,6 +490,7 @@ export default function DocumentsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [historyDocument, setHistoryDocument] = useState<Document | null>(null);
   const [versionDocument, setVersionDocument] = useState<Document | null>(null);
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [selectedCenter, setSelectedCenter] = useState<string>("all");
 
   const { data: documents = [], isLoading } = useQuery<Document[]>({ 
@@ -556,6 +569,7 @@ export default function DocumentsPage() {
                 departments={departments}
                 onViewHistory={setHistoryDocument}
                 onNewVersion={setVersionDocument}
+                onPreview={setPreviewDocument}
               />
             ))
           ) : (
@@ -611,6 +625,7 @@ export default function DocumentsPage() {
                       department={getDepartment(doc.departmentId)}
                       onViewHistory={() => setHistoryDocument(doc)}
                       onNewVersion={() => setVersionDocument(doc)}
+                      onPreview={() => setPreviewDocument(doc)}
                       showCenter
                     />
                   ))}
@@ -641,6 +656,11 @@ export default function DocumentsPage() {
         document={versionDocument} 
         open={!!versionDocument} 
         onOpenChange={(open) => !open && setVersionDocument(null)}
+      />
+      <DocumentPreviewDialog
+        document={previewDocument}
+        open={!!previewDocument}
+        onOpenChange={(open) => !open && setPreviewDocument(null)}
       />
     </div>
   );

@@ -341,6 +341,30 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/documents/:id/current-version", async (req: Request, res: Response) => {
+    try {
+      const document = await storage.getDocument(req.params.id);
+      if (!document) {
+        return res.status(404).json({ error: "Documento no encontrado" });
+      }
+      const versions = await storage.getDocumentVersions(req.params.id);
+      if (versions.length === 0) {
+        return res.status(404).json({ error: "No hay versiones disponibles" });
+      }
+      const currentVersion = versions.find(v => v.version === document.currentVersion && v.approvalStatus === 'approved');
+      if (currentVersion) {
+        return res.json(currentVersion);
+      }
+      const latestApproved = versions.find(v => v.approvalStatus === 'approved');
+      if (latestApproved) {
+        return res.json(latestApproved);
+      }
+      return res.json(versions[0]);
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener la versión actual" });
+    }
+  });
+
   // Document Versions (only show approved versions to regular users)
   app.get("/api/documents/:id/versions", async (req: Request, res: Response) => {
     try {

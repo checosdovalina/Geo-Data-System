@@ -17,9 +17,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ArrowLeft, Building2, MapPin, FileText, Plus, History, Upload, Download, Clock, FolderOpen, File, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, Building2, MapPin, FileText, Plus, History, Upload, Download, Clock, FolderOpen, File, Loader2, CheckCircle2, XCircle, Eye } from "lucide-react";
 import type { Center, Document, DocumentVersion, Department } from "@shared/schema";
 import { useUpload } from "@/hooks/use-upload";
+import { DocumentPreviewDialog } from "@/components/document-preview-dialog";
 
 const documentFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -494,12 +495,14 @@ function DocumentCard({
   document, 
   department,
   onViewHistory,
-  onNewVersion
+  onNewVersion,
+  onPreview
 }: { 
   document: Document;
   department?: Department;
   onViewHistory: () => void;
   onNewVersion: () => void;
+  onPreview: () => void;
 }) {
   const getTypeLabel = (type: string) => {
     return documentTypes.find(t => t.value === type)?.label || type;
@@ -525,6 +528,15 @@ function DocumentCard({
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={onPreview}
+              title="Ver / Descargar"
+              data-testid={`button-doc-preview-${document.id}`}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
             <Button 
               variant="ghost" 
               size="icon"
@@ -556,6 +568,7 @@ export default function CenterDetailPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [historyDocument, setHistoryDocument] = useState<Document | null>(null);
   const [versionDocument, setVersionDocument] = useState<Document | null>(null);
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
 
   const { data: center, isLoading: centerLoading } = useQuery<Center>({
@@ -699,6 +712,7 @@ export default function CenterDetailPage() {
                         department={department}
                         onViewHistory={() => setHistoryDocument(doc)}
                         onNewVersion={() => setVersionDocument(doc)}
+                        onPreview={() => setPreviewDocument(doc)}
                       />
                     ))}
                   </div>
@@ -752,6 +766,7 @@ export default function CenterDetailPage() {
                       department={getDepartment(doc.departmentId)}
                       onViewHistory={() => setHistoryDocument(doc)}
                       onNewVersion={() => setVersionDocument(doc)}
+                      onPreview={() => setPreviewDocument(doc)}
                     />
                   ))}
                 </div>
@@ -780,6 +795,11 @@ export default function CenterDetailPage() {
         document={versionDocument}
         open={!!versionDocument}
         onOpenChange={(open) => !open && setVersionDocument(null)}
+      />
+      <DocumentPreviewDialog
+        document={previewDocument}
+        open={!!previewDocument}
+        onOpenChange={(open) => !open && setPreviewDocument(null)}
       />
     </div>
   );

@@ -63,6 +63,13 @@ MVP implementation is complete with the following modules:
 - Complete version history available
 - Change reasons are mandatory
 
+### Document Preview & Download
+- Preview PDFs and images directly in the app (inline viewer)
+- Open documents in a new tab
+- Download documents directly
+- Preview available from both Documents page and Center Detail page
+- Shows file metadata: name, size, type, version, upload date
+
 ### Document Approval Workflow
 - New document versions start with status "pending"
 - Department admins can approve or reject pending versions
