@@ -246,7 +246,8 @@ export async function registerRoutes(
         return res.status(400).json({ error: "El nombre de usuario ya existe" });
       }
       
-      const user = await storage.createUser(parsed.data);
+      const hashedPassword = await bcrypt.hash(parsed.data.password, 10);
+      const user = await storage.createUser({ ...parsed.data, password: hashedPassword });
       await logAudit(req, "create", "user", user.id, user.fullName, `Rol: ${user.role}`);
       res.status(201).json(user);
     } catch (error) {
@@ -276,13 +277,17 @@ export async function registerRoutes(
         return res.status(400).json({ error: parsed.error.errors });
       }
       
-      const updateData = parsed.data;
+      const updateData = { ...parsed.data };
       
       if (updateData.username && updateData.username !== existingUser.username) {
         const usernameExists = await storage.getUserByUsername(updateData.username);
         if (usernameExists) {
           return res.status(400).json({ error: "El nombre de usuario ya existe" });
         }
+      }
+
+      if (updateData.password) {
+        updateData.password = await bcrypt.hash(updateData.password, 10);
       }
       
       const user = await storage.updateUser(req.params.id, updateData);
