@@ -1,0 +1,65 @@
+[root@localhost geodoc-center]# pm2 start npm --name "geodoc" -- start
+pm2 save
+[PM2] Starting /usr/bin/npm in fork_mode (1 instance)
+[PM2] Done.
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 3  │ comite-app         │ fork     │ 14   │ online    │ 0%       │ 121.8mb  │
+│ 5  │ geodoc             │ fork     │ 0    │ online    │ 0%       │ 12.5mb   │
+│ 4  │ sheltiescrm        │ fork     │ 8    │ online    │ 0%       │ 68.3mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+[root@localhost geodoc-center]# curl http://localhost:3500
+curl: (7) Failed to connect to localhost port 3500: Connection refused
+[root@localhost geodoc-center]# pm2 logs geodoc --lines 30
+[TAILING] Tailing last 30 lines for [geodoc] process (change the value with --lines option)
+/root/.pm2/logs/geodoc-out.log last 30 lines:
+5|geodoc   | > NODE_ENV=production node dist/index.cjs
+5|geodoc   | 
+5|geodoc   | 
+5|geodoc   | > rest-express@1.0.0 start
+5|geodoc   | > NODE_ENV=production node dist/index.cjs
+5|geodoc   | 
+5|geodoc   | 
+5|geodoc   | > rest-express@1.0.0 start
+5|geodoc   | > NODE_ENV=production node dist/index.cjs
+5|geodoc   | 
+5|geodoc   | 
+5|geodoc   | > rest-express@1.0.0 start
+5|geodoc   | > NODE_ENV=production node dist/index.cjs
+5|geodoc   | 
+5|geodoc   | 
+5|geodoc   | > rest-express@1.0.0 start
+5|geodoc   | > NODE_ENV=production node dist/index.cjs
+5|geodoc   | 
+5|geodoc   | 
+5|geodoc   | > rest-express@1.0.0 start
+5|geodoc   | > NODE_ENV=production node dist/index.cjs
+5|geodoc   | 
+5|geodoc   | 
+5|geodoc   | > rest-express@1.0.0 start
+5|geodoc   | > NODE_ENV=production node dist/index.cjs
+5|geodoc   | 
+5|geodoc   | 
+5|geodoc   | > rest-express@1.0.0 start
+5|geodoc   | > NODE_ENV=production node dist/index.cjs
+5|geodoc   | 
+
+/root/.pm2/logs/geodoc-error.log last 30 lines:
+5|geodoc   | 1 pr\xF3ximo a vencer. Se requiere actualizaci\xF3n.",centerId:o[1].id,documentId:u[1].id,createdByName:"Jos\xE9 Hern\xE1ndez"},{type:"missing_info",title:"Falta licencia de uso de suelo Tijuana",description:"No se encuentra en el sistema la licencia de uso de suelo para Sucursal Tijuana Norte.",centerId:o[3].id,createdByName:"Roberto S\xE1nchez"},{type:"sensitive_change",title:"Cambio de propietario Centro Veracruz",description:"Se reporta cambio en la escritura del Centro Log\xEDstico Veracruz. Requiere revisi\xF3n urgente.",centerId:o[5].id,createdByName:"Carlos Rodr\xEDguez"}];await q.insert(Tt).values(d),console.log("Inserted incidents");let f=[{userName:"Carlos Rodr\xEDguez",action:"create",entityType:"center",entityId:o[0].id,entityName:"Centro Comercial Santa Fe",details:"Centro creado",ipAddress:"192.168.1.100"},{userName:"Mar\xEDa Garc\xEDa L\xF3pez",action:"create",entityType:"document",entityId:u[0].id,entityName:"Escritura P\xFAblica Centro Santa Fe",details:"Documento registrado",ipAddress:"192.168.1.101"},{userName:"Jos\xE9 Hern\xE1ndez",action:"view",entityType:"document",entityId:u[1].id,entityName:"Predial 2024 - Torre Monterrey",details:"Consulta de documento",ipAddress:"192.168.1.102"},{userName:"Ana Mart\xEDnez",action:"download",entityType:"document",entityId:u[2].id,entityName:"Contrato Arrendamiento Plaza GDL",details:"Descarga de versi\xF3n 2",ipAddress:"192.168.1.103"},{userName:"Mar\xEDa Garc\xEDa L\xF3pez",action:"version",entityType:"document",entityId:u[2].id,entityName:"Contrato Arrendamiento Plaza GDL",details:"Nueva versi\xF3n 2: Adendum con nuevas cl\xE1usulas",ipAddress:"192.168.1.101"},{userName:"Roberto S\xE1nchez",action:"view",entityType:"center",entityId:o[3].id,entityName:"Sucursal Tijuana Norte",details:"Auditor\xEDa de centro",ipAddress:"192.168.1.104"}];await q.insert(kr).values(f),console.log("Inserted audit logs");let y=[{userId:s[0].id,title:"Nueva versi\xF3n de documento",message:"Se ha subido una nueva versi\xF3n del Contrato Arrendamiento Plaza GDL",type:"new_version",relatedEntityType:"document",relatedEntityId:u[2].id},{userId:s[0].id,title:"Incidente creado",message:"Se ha creado un nuevo incidente: Predial vencido - Torre Monterrey",type:"incident_created",relatedEntityType:"incident"},{userId:s[1].id,title:"Solicitud de aprobaci\xF3n",message:"Hay una nueva solicitud de aprobaci\xF3n pendiente para el contrato de GDL",type:"incident_created",relatedEntityType:"incident"},{userId:s[0].id,title:"Cambio sensible detectado",message:"Se ha reportado un cambio sensible en Centro Log\xEDstico Veracruz",type:"incident_created",relatedEntityType:"incident"},{userId:s[2].id,title:"Documento actualizado",message:"El documento de Predial 2024 - Torre Monterrey requiere atenci\xF3n",type:"new_version",relatedEntityType:"document",relatedEntityId:u[1].id}];await q.insert(He).values(y),console.log("Inserted notifications"),console.log("Database seeding completed successfully!")}catch(t){throw console.error("Error seeding database:",t),t}}var Ir=(0,Xo.default)(),qC=(0,RC.createServer)(Ir);Ir.use(Xo.default.json({verify:(t,e,r)=>{t.rawBody=r}}));Ir.use(Xo.default.urlencoded({extended:!1}));var PN=(0,DC.default)(Jf.default),IN=new zt.Pool({connectionString:process.env.DATABASE_URL});Ir.use((0,Jf.default)({store:new PN({pool:IN,createTableIfMissing:!0}),secret:process.env.SESSION_SECRET||"geodoc-secret-key-change-in-production",resave:!1,saveUninitialized:!1,cookie:{maxAge:1440*60*1e3,httpOnly:!0,secure:!1,sameSite:"lax"}}));function Xf(t,e="express"){let r=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit",hour12:!0});console.log(`${r} [${e}] ${t}`)}Ir.use((t,e,r)=>{let n=Date.now(),i=t.path,s,a=e.json;e.json=function(o,...l){return s=o,a.apply(e,[o,...l])},e.on("finish",()=>{let o=Date.now()-n;if(i.startsWith("/api")){let l=`${t.method} ${i} ${e.statusCode} in ${o}ms`;s&&(l+=` :: ${JSON.stringify(s)}`),Xf(l)}}),r()});(async()=>{try{await FC()}catch(e){console.error("Failed to seed database:",e)}await IC(qC,Ir),Ir.use((e,r,n,i)=>{let s=e.status||e.statusCode||500,a=e.message||"Internal Server Error";return console.error("Internal Server Error:",e),n.headersSent?i(e):n.status(s).json({message:a})}),NC(Ir);let t=parseInt(process.env.PORT||"5000",10);qC.listen({port:t,host:"0.0.0.0",reusePort:!0},()=>{Xf(`serving on port ${t}`)})})();0&&(module.exports={log});
+5|geodoc   | 		                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+5|geodoc   | 
+5|geodoc   | Error: DATABASE_URL must be set. Did you forget to provision a database?
+5|geodoc   |     at Object.<anonymous> (/opt/geodoc-center/dist/index.cjs:80:103418)
+5|geodoc   |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+5|geodoc   |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+5|geodoc   |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+5|geodoc   |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+5|geodoc   |     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+5|geodoc   |     at node:internal/main/run_main_module:28:49
+5|geodoc   | 
+5|geodoc   | Node.js v20.19.6
+
+
