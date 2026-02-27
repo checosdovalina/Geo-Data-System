@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Building2, Loader2, ArrowLeft, Shield, FileText, Map, CheckCircle2, Layers, Lock } from "lucide-react";
+import { Redirect } from "wouter";
 
 const loginSchema = z.object({
   email: z.string().email("Ingresa un correo electrónico válido"),
@@ -20,7 +21,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -45,6 +46,18 @@ export default function LoginPage() {
       },
     });
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Redirect to="/dashboard" />;
+  }
 
   const features = [
     { icon: Shield, text: "Seguridad y control de acceso avanzado" },

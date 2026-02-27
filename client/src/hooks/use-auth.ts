@@ -20,8 +20,8 @@ export function useAuth() {
       const res = await apiRequest("POST", "/api/auth/login", credentials);
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+    onSuccess: (data: { user: AuthUser }) => {
+      queryClient.setQueryData(["/api/auth/me"], data);
       setLocation("/dashboard");
     },
   });
