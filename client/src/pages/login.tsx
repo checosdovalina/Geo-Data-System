@@ -70,7 +70,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex" data-testid="page-login">
-      <div className="hidden lg:flex gradient-hero-animated w-[48%] flex-col items-center justify-center p-12 relative overflow-hidden">
+      <div
+        className="hidden lg:flex w-[48%] flex-col items-center justify-center p-12 relative overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #003366 0%, #005fa3 30%, #0e7490 60%, #0d9488 100%)" }}
+      >
         <div className="absolute inset-0 hero-pattern" />
         <div className="absolute inset-0 hero-dots opacity-15" />
 
@@ -129,7 +132,7 @@ export default function LoginPage() {
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="w-full max-w-md animate-slide-up" style={{ animationDelay: "0.1s" }}>
             <div className="text-center mb-8 lg:hidden">
-              <div className="w-18 h-18 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg w-[72px] h-[72px]">
+              <div className="w-18 h-18 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg w-[72px] h-[72px]" style={{ background: "linear-gradient(135deg, #0066cc, #0e7490)" }}>
                 <Building2 className="h-9 w-9 text-primary-foreground" />
               </div>
               <h1 className="text-2xl font-bold" data-testid="text-login-title-mobile">GeoDoc Center</h1>

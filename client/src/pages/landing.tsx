@@ -150,8 +150,8 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-hero-animated hero-pattern" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-950 via-blue-800 to-teal-700">
+        <div className="absolute inset-0 hero-pattern" />
         <div className="absolute inset-0 hero-dots opacity-30" />
         <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-[10%] right-[5%] w-80 h-80 bg-teal-400/5 rounded-full blur-3xl" />
@@ -339,7 +339,7 @@ export default function LandingPage() {
 
       <section className="py-24">
         <div className="max-w-3xl mx-auto px-6">
-          <div className="gradient-hero-animated rounded-3xl py-16 md:py-20 px-8 text-center text-white relative overflow-hidden shadow-2xl">
+          <div className="rounded-3xl py-16 md:py-20 px-8 text-center text-white relative overflow-hidden shadow-2xl bg-gradient-to-br from-blue-950 via-blue-800 to-teal-700">
             <div className="absolute inset-0 hero-pattern" />
             <div className="absolute inset-0 hero-dots opacity-20" />
             <div className="relative">
