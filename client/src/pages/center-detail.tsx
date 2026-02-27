@@ -350,6 +350,11 @@ function NewVersionDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadFile, isUploading, progress } = useUpload({});
 
+  const { data: versions = [] } = useQuery<DocumentVersion[]>({
+    queryKey: ['/api/documents', document?.id, 'versions'],
+    enabled: !!document?.id && open,
+  });
+
   const createVersionMutation = useMutation({
     mutationFn: async () => {
       let filePath: string | null = null;
@@ -400,9 +405,20 @@ function NewVersionDialog({
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <Badge variant="default" className="text-xs"><CheckCircle2 className="h-3 w-3 mr-1" />Aprobado</Badge>;
+      case "rejected":
+        return <Badge variant="destructive" className="text-xs"><XCircle className="h-3 w-3 mr-1" />Rechazado</Badge>;
+      default:
+        return <Badge variant="secondary" className="text-xs"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>;
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { setSelectedFile(null); setChangeReason(""); } onOpenChange(v); }}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
@@ -421,6 +437,50 @@ function NewVersionDialog({
               <Badge>v{document.currentVersion + 1}</Badge>
             </p>
           </div>
+
+          {versions.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <label className="text-sm font-medium">Historial de versiones anteriores</label>
+              </div>
+              <ScrollArea className="max-h-48 border rounded-md">
+                <div className="space-y-2 p-3">
+                  {versions.map((version) => (
+                    <div key={version.id} className="flex items-start gap-3 p-2 rounded-md bg-muted/50 text-sm">
+                      <Badge variant="outline" className="shrink-0 mt-0.5">v{version.version}</Badge>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium truncate">{version.fileName}</p>
+                          {getStatusBadge(version.approvalStatus)}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{version.changeReason}</p>
+                        <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(version.uploadedAt).toLocaleString('es-MX')}
+                          </span>
+                          {version.fileSize > 0 && (
+                            <span>{formatFileSize(version.fileSize)}</span>
+                          )}
+                        </div>
+                      </div>
+                      {version.filePath && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="shrink-0 h-7 w-7"
+                          onClick={() => window.open(version.filePath!, '_blank')}
+                        >
+                          <Download className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Archivo *</label>
