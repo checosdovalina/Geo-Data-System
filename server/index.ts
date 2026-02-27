@@ -46,30 +46,11 @@ const sessionPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-async function ensureSessionTable() {
-  const client = await sessionPool.connect();
-  try {
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS "session" (
-        "sid" varchar NOT NULL COLLATE "default",
-        "sess" json NOT NULL,
-        "expire" timestamp(6) NOT NULL,
-        CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
-      ) WITH (OIDS=FALSE);
-      CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
-    `);
-  } finally {
-    client.release();
-  }
-}
-
-ensureSessionTable().catch((err) => console.error("Failed to create session table:", err));
-
 app.use(
   session({
     store: new PgSession({
       pool: sessionPool,
-      createTableIfMissing: false,
+      createTableIfMissing: true,
     }),
     secret: process.env.SESSION_SECRET || "geodoc-secret-key-change-in-production",
     resave: false,
