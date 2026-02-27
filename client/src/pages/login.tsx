@@ -123,12 +123,7 @@ export default function LoginPage() {
                 </form>
               </Form>
 
-              <div className="mt-6 pt-4 border-t space-y-3">
-                <div className="bg-muted/50 rounded-md p-3">
-                  <p className="text-xs font-medium mb-1">Credenciales de demostración:</p>
-                  <p className="text-xs text-muted-foreground">Correo: <span className="font-mono select-all">admin@geodoc.mx</span></p>
-                  <p className="text-xs text-muted-foreground">Contraseña: <span className="font-mono select-all">Admin123!</span></p>
-                </div>
+              <div className="mt-6 pt-4 border-t">
                 <p className="text-xs text-muted-foreground text-center">
                   Contacta al administrador del sistema si no tienes acceso.
                 </p>
