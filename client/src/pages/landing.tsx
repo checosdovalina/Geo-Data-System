@@ -95,11 +95,11 @@ const benefits = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background" data-testid="page-landing">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 border-b shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4 flex-wrap px-6 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-md flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-primary-foreground" />
+            <div className="w-10 h-10 gradient-primary rounded-md flex items-center justify-center">
+              <Building2 className="h-6 w-6 text-white" />
             </div>
             <div>
               <h1 className="font-bold text-lg leading-tight">GeoDoc Center</h1>
@@ -118,9 +118,9 @@ export default function LandingPage() {
       </header>
 
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/3" />
+        <div className="absolute inset-0 gradient-mesh" />
         <div className="max-w-6xl mx-auto px-6 py-20 md:py-28 relative">
-          <div className="max-w-3xl mx-auto text-center">
+          <div className="max-w-3xl mx-auto text-center animate-slide-up">
             <Badge variant="secondary" className="mb-6">
               Plataforma SaaS para Gestión Inmobiliaria
             </Badge>
@@ -148,18 +148,20 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
-            {[
-              { value: "190+", label: "Centros" },
-              { value: "7", label: "Departamentos" },
-              { value: "5", label: "Roles de Acceso" },
-              { value: "100%", label: "Trazabilidad" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center" data-testid={`stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
-                <p className="text-3xl font-bold text-primary" data-testid={`text-stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </div>
-            ))}
+          <div className="mt-16 glass-card rounded-2xl p-8 border border-border/50 max-w-2xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { value: "190+", label: "Centros" },
+                { value: "7", label: "Departamentos" },
+                { value: "5", label: "Roles de Acceso" },
+                { value: "100%", label: "Trazabilidad" },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center" data-testid={`stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <p className="text-3xl font-bold text-primary" data-testid={`text-stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</p>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -176,11 +178,16 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => (
-              <Card key={feature.title} className="hover-elevate" data-testid={`card-feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}>
+            {features.map((feature, index) => (
+              <Card
+                key={feature.title}
+                className="hover-elevate transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                data-testid={`card-feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
+              >
                 <CardContent className="p-6">
-                  <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center mb-4">
-                    <feature.icon className="h-5 w-5 text-primary" />
+                  <div className="h-10 w-10 rounded-md gradient-primary flex items-center justify-center mb-4">
+                    <feature.icon className="h-5 w-5 text-white" />
                   </div>
                   <h4 className="font-semibold mb-2" data-testid={`text-feature-title-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}>{feature.title}</h4>
                   <p className="text-sm text-muted-foreground">{feature.description}</p>
@@ -204,12 +211,17 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {benefits.map((benefit) => (
-              <Card key={benefit.title} className="hover-elevate" data-testid={`card-benefit-${benefit.title.toLowerCase().replace(/\s+/g, '-')}`}>
+            {benefits.map((benefit, index) => (
+              <Card
+                key={benefit.title}
+                className="hover-elevate transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                data-testid={`card-benefit-${benefit.title.toLowerCase().replace(/\s+/g, '-')}`}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                      <benefit.icon className="h-5 w-5 text-primary" />
+                    <div className="h-10 w-10 rounded-md gradient-primary flex items-center justify-center shrink-0">
+                      <benefit.icon className="h-5 w-5 text-white" />
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">{benefit.title}</h4>
@@ -252,8 +264,8 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
-              <div className="h-14 w-14 rounded-md bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <FileText className="h-7 w-7 text-primary" />
+              <div className="h-14 w-14 rounded-md gradient-primary flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-7 w-7 text-white" />
               </div>
               <h4 className="font-semibold mb-2">Documentos</h4>
               <p className="text-sm text-muted-foreground">
@@ -262,8 +274,8 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="h-14 w-14 rounded-md bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Building2 className="h-7 w-7 text-primary" />
+              <div className="h-14 w-14 rounded-md gradient-primary flex items-center justify-center mx-auto mb-4">
+                <Building2 className="h-7 w-7 text-white" />
               </div>
               <h4 className="font-semibold mb-2">Inmuebles</h4>
               <p className="text-sm text-muted-foreground">
@@ -272,8 +284,8 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="h-14 w-14 rounded-md bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Users className="h-7 w-7 text-primary" />
+              <div className="h-14 w-14 rounded-md gradient-primary flex items-center justify-center mx-auto mb-4">
+                <Users className="h-7 w-7 text-white" />
               </div>
               <h4 className="font-semibold mb-2">Equipos</h4>
               <p className="text-sm text-muted-foreground">
@@ -286,27 +298,30 @@ export default function LandingPage() {
       </section>
 
       <section className="py-20">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h3 className="text-3xl font-bold mb-4">Comienza a Gestionar tus Documentos Hoy</h3>
-          <p className="text-muted-foreground mb-8">
-            Únete a las empresas que ya confían en GeoDoc Center para la gestión 
-            documental y gobernanza de sus inmuebles en todo México.
-          </p>
-          <Link href="/login">
-            <Button size="lg" data-testid="button-cta-login">
-              Acceder a la Plataforma
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </Link>
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="gradient-primary rounded-2xl py-16 px-8 text-center text-white">
+            <h3 className="text-3xl font-bold mb-4">Comienza a Gestionar tus Documentos Hoy</h3>
+            <p className="text-white/80 mb-8">
+              Únete a las empresas que ya confían en GeoDoc Center para la gestión 
+              documental y gobernanza de sus inmuebles en todo México.
+            </p>
+            <Link href="/login">
+              <Button size="lg" variant="outline" className="bg-white/10 border-white/30 text-white backdrop-blur-sm" data-testid="button-cta-login">
+                Acceder a la Plataforma
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      <footer className="border-t py-8">
-        <div className="max-w-6xl mx-auto px-6">
+      <footer className="border-t py-8 relative">
+        <div className="absolute inset-0 gradient-mesh opacity-50" />
+        <div className="max-w-6xl mx-auto px-6 relative">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-                <Building2 className="h-4 w-4 text-primary-foreground" />
+              <div className="w-8 h-8 gradient-primary rounded-md flex items-center justify-center">
+                <Building2 className="h-4 w-4 text-white" />
               </div>
               <span className="font-semibold">GeoDoc Center</span>
             </div>

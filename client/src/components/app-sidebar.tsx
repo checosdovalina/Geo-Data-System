@@ -48,6 +48,15 @@ const operationsItems = [
   { title: "Notificaciones", url: "/notifications", icon: Bell, badge: 5 },
 ];
 
+function getUserInitials(fullName?: string): string {
+  if (!fullName) return "U";
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0][0]?.toUpperCase() || "U";
+}
+
 export function AppSidebar() {
   const [location] = useLocation();
   const { user, logout } = useAuth();
@@ -56,19 +65,19 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-md flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-primary-foreground" />
+          <div className="h-11 w-11 gradient-primary rounded-xl flex items-center justify-center shrink-0">
+            <Building2 className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="font-semibold text-sidebar-foreground">GeoDoc Center</h1>
-            <p className="text-xs text-muted-foreground">Gestión Documental</p>
+            <h1 className="text-base font-bold text-sidebar-foreground">GeoDoc Center</h1>
+            <p className="text-xs text-primary/60">Gestión Documental</p>
           </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
+          <SidebarGroupLabel className="uppercase tracking-wider text-[0.65rem] font-semibold text-muted-foreground/70">Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNavItems.map((item) => (
@@ -86,7 +95,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Administración</SidebarGroupLabel>
+          <SidebarGroupLabel className="uppercase tracking-wider text-[0.65rem] font-semibold text-muted-foreground/70">Administración</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {managementItems.map((item) => (
@@ -104,7 +113,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Operaciones</SidebarGroupLabel>
+          <SidebarGroupLabel className="uppercase tracking-wider text-[0.65rem] font-semibold text-muted-foreground/70">Operaciones</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {operationsItems.map((item) => (
@@ -141,8 +150,8 @@ export function AppSidebar() {
       </SidebarFooter>
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <div className="h-9 w-9 gradient-primary rounded-full flex items-center justify-center shrink-0">
+            <span className="text-white font-semibold text-sm">{getUserInitials(user?.fullName)}</span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate" data-testid="text-current-user-name">
@@ -160,7 +169,7 @@ export function AppSidebar() {
             variant="ghost"
             size="icon"
             onClick={() => logout.mutate()}
-            className="shrink-0"
+            className="shrink-0 hover:text-destructive transition-colors"
             data-testid="button-logout"
           >
             <LogOut className="h-4 w-4" />

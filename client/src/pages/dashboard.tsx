@@ -16,24 +16,30 @@ function StatCard({
   value, 
   description, 
   icon: Icon, 
-  trend 
+  trend,
+  gradient,
+  iconColor,
+  iconBg,
 }: { 
   title: string; 
   value: string | number; 
   description: string; 
   icon: React.ElementType;
   trend?: { value: number; positive: boolean };
+  gradient?: string;
+  iconColor?: string;
+  iconBg?: string;
 }) {
   return (
-    <Card className="hover-elevate">
+    <Card className={`hover-elevate transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${gradient || ''}`}>
       <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
-          <Icon className="h-4 w-4 text-primary" />
+        <div className={`h-12 w-12 rounded-md flex items-center justify-center ${iconBg || 'bg-primary/10'}`}>
+          <Icon className={`h-5 w-5 ${iconColor || 'text-primary'}`} />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-3xl font-bold">{value}</div>
         <p className="text-xs text-muted-foreground mt-1">{description}</p>
         {trend && (
           <div className="flex items-center gap-1 mt-2">
@@ -151,8 +157,14 @@ export default function Dashboard() {
   return (
     <div className="flex-1 overflow-auto p-6" data-testid="page-dashboard">
       <div className="mb-6">
+        <p className="text-sm text-muted-foreground">Bienvenido de nuevo</p>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Resumen general del sistema de gestión documental</p>
+        <p className="text-muted-foreground">
+          {(() => {
+            const dateStr = new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+          })()}
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
@@ -162,6 +174,9 @@ export default function Dashboard() {
           description={`de ${centers.length} centros totales`}
           icon={Building2}
           trend={{ value: 5, positive: true }}
+          gradient="stat-gradient-blue"
+          iconColor="text-blue-600 dark:text-blue-400"
+          iconBg="bg-blue-100 dark:bg-blue-900/30"
         />
         <StatCard 
           title="Documentos" 
@@ -169,23 +184,32 @@ export default function Dashboard() {
           description="documentos registrados"
           icon={FileText}
           trend={{ value: 12, positive: true }}
+          gradient="stat-gradient-teal"
+          iconColor="text-teal-600 dark:text-teal-400"
+          iconBg="bg-teal-100 dark:bg-teal-900/30"
         />
         <StatCard 
           title="Incidentes Pendientes" 
           value={pendingIncidents}
           description="requieren atención"
           icon={AlertTriangle}
+          gradient="stat-gradient-amber"
+          iconColor="text-amber-600 dark:text-amber-400"
+          iconBg="bg-amber-100 dark:bg-amber-900/30"
         />
         <StatCard 
           title="Usuarios Activos" 
           value={15}
           description="en el sistema"
           icon={Users}
+          gradient="stat-gradient-purple"
+          iconColor="text-purple-600 dark:text-purple-400"
+          iconBg="bg-purple-100 dark:bg-purple-900/30"
         />
       </div>
 
       {expiringDocs.length > 0 && (
-        <Card className="mb-6 border-orange-200 dark:border-orange-800">
+        <Card className="mb-6 border-orange-200 dark:border-orange-800 border-l-4 border-l-orange-400 dark:border-l-orange-500">
           <CardHeader className="flex flex-row items-center gap-2 pb-4">
             <CalendarClock className="h-4 w-4 text-orange-500" />
             <CardTitle className="text-base">Documentos Próximos a Vencer</CardTitle>
@@ -202,7 +226,7 @@ export default function Dashboard() {
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="animate-fade-in">
           <CardHeader className="flex flex-row items-center gap-2 pb-4">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <CardTitle className="text-base">Actividad Reciente</CardTitle>
@@ -221,7 +245,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-fade-in">
           <CardHeader className="flex flex-row items-center gap-2 pb-4">
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             <CardTitle className="text-base">Incidentes Recientes</CardTitle>
