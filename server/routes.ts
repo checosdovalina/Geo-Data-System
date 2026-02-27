@@ -314,6 +314,35 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/documents/expiring", async (_req: Request, res: Response) => {
+    try {
+      const expiring = await storage.getExpiringDocuments(30);
+      const expired = await storage.getExpiredDocuments();
+      const allDocs = [...expired, ...expiring];
+      const centers = await storage.getCenters();
+      const departments = await storage.getDepartments();
+      const enriched = allDocs.map(doc => {
+        const center = centers.find(c => c.id === doc.centerId);
+        const department = departments.find(d => d.id === doc.departmentId);
+        const now = new Date();
+        const daysLeft = doc.expirationDate 
+          ? Math.ceil((doc.expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+          : null;
+        return {
+          ...doc,
+          centerName: center?.name || 'Desconocido',
+          departmentName: department?.name || 'Desconocido',
+          daysLeft,
+          urgency: daysLeft === null ? 'none' : daysLeft <= 0 ? 'expired' : daysLeft <= 7 ? 'critical' : daysLeft <= 15 ? 'urgent' : 'warning',
+        };
+      });
+      enriched.sort((a, b) => (a.daysLeft ?? 999) - (b.daysLeft ?? 999));
+      res.json(enriched);
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener documentos por vencer" });
+    }
+  });
+
   app.get("/api/documents/:id", async (req: Request, res: Response) => {
     try {
       const document = await storage.getDocument(req.params.id);
@@ -329,7 +358,11 @@ export async function registerRoutes(
 
   app.post("/api/documents", async (req: Request, res: Response) => {
     try {
-      const parsed = insertDocumentSchema.safeParse(req.body);
+      const body = { ...req.body };
+      if (body.expirationDate && typeof body.expirationDate === 'string') {
+        body.expirationDate = new Date(body.expirationDate);
+      }
+      const parsed = insertDocumentSchema.safeParse(body);
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
       }

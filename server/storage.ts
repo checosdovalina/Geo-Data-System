@@ -11,7 +11,7 @@ import {
   users, centers, departments, documents, documentVersions, auditLogs, incidents, notifications, systemSettings
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, lte, gte, isNotNull, or } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -49,6 +49,11 @@ export interface IStorage {
   approveVersion(id: string, approvedBy: string): Promise<DocumentVersion | undefined>;
   rejectVersion(id: string, rejectedBy: string, reason: string): Promise<DocumentVersion | undefined>;
   
+  // Expiring Documents
+  getExpiringDocuments(daysAhead: number): Promise<Document[]>;
+  getExpiredDocuments(): Promise<Document[]>;
+  markReminderSent(id: string, level: '30' | '15' | '7' | 'expired'): Promise<void>;
+
   // Audit Logs
   getAuditLogs(limit?: number): Promise<AuditLog[]>;
   createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
@@ -159,8 +164,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateDocument(id: string, document: Partial<InsertDocument>): Promise<Document | undefined> {
+    const updateData: any = { ...document };
+    if ('expirationDate' in updateData) {
+      updateData.reminderSent30 = false;
+      updateData.reminderSent15 = false;
+      updateData.reminderSent7 = false;
+      updateData.reminderSentExpired = false;
+    }
     const [updated] = await db.update(documents)
-      .set(document)
+      .set(updateData)
       .where(eq(documents.id, id))
       .returning();
     return updated;
@@ -271,6 +283,44 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updated;
+  }
+
+  // Expiring Documents
+  async getExpiringDocuments(daysAhead: number): Promise<Document[]> {
+    const now = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + daysAhead);
+    return db.select().from(documents)
+      .where(
+        and(
+          isNotNull(documents.expirationDate),
+          gte(documents.expirationDate, now),
+          lte(documents.expirationDate, futureDate)
+        )
+      )
+      .orderBy(documents.expirationDate);
+  }
+
+  async getExpiredDocuments(): Promise<Document[]> {
+    const now = new Date();
+    return db.select().from(documents)
+      .where(
+        and(
+          isNotNull(documents.expirationDate),
+          lte(documents.expirationDate, now)
+        )
+      )
+      .orderBy(documents.expirationDate);
+  }
+
+  async markReminderSent(id: string, level: '30' | '15' | '7' | 'expired'): Promise<void> {
+    const fieldMap = {
+      '30': { reminderSent30: true },
+      '15': { reminderSent15: true },
+      '7': { reminderSent7: true },
+      'expired': { reminderSentExpired: true },
+    };
+    await db.update(documents).set(fieldMap[level]).where(eq(documents.id, id));
   }
 
   // Audit Logs

@@ -66,6 +66,11 @@ export const documents = pgTable("documents", {
   centerId: varchar("center_id").notNull(),
   departmentId: varchar("department_id").notNull(),
   currentVersion: integer("current_version").default(1).notNull(),
+  expirationDate: timestamp("expiration_date"),
+  reminderSent30: boolean("reminder_sent_30").default(false),
+  reminderSent15: boolean("reminder_sent_15").default(false),
+  reminderSent7: boolean("reminder_sent_7").default(false),
+  reminderSentExpired: boolean("reminder_sent_expired").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: varchar("created_by"),
 });
@@ -145,7 +150,7 @@ export const notifications = pgTable("notifications", {
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertDepartmentSchema = createInsertSchema(departments).omit({ id: true, createdAt: true });
 export const insertCenterSchema = createInsertSchema(centers).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, createdAt: true, currentVersion: true });
+export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, createdAt: true, currentVersion: true, reminderSent30: true, reminderSent15: true, reminderSent7: true, reminderSentExpired: true });
 export const insertDocumentVersionSchema = createInsertSchema(documentVersions).omit({ id: true, uploadedAt: true });
 export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true, createdAt: true });
 export const insertIncidentSchema = createInsertSchema(incidents).omit({ id: true, createdAt: true, updatedAt: true, status: true });

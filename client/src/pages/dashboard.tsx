@@ -1,8 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, FileText, AlertTriangle, Users, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
+import { Building2, FileText, AlertTriangle, Users, TrendingUp, Clock, CheckCircle2, CalendarClock } from "lucide-react";
 import type { Center, Document, Incident, AuditLog } from "@shared/schema";
+
+type ExpiringDocument = Document & {
+  centerName: string;
+  departmentName: string;
+  daysLeft: number | null;
+  urgency: 'expired' | 'critical' | 'urgent' | 'warning' | 'none';
+};
 
 function StatCard({ 
   title, 
@@ -79,6 +86,35 @@ function RecentActivityItem({ log }: { log: AuditLog }) {
   );
 }
 
+function ExpiringDocumentItem({ doc }: { doc: ExpiringDocument }) {
+  const getUrgencyBadge = () => {
+    switch (doc.urgency) {
+      case 'expired': return <Badge variant="destructive">Vencido</Badge>;
+      case 'critical': return <Badge variant="destructive" className="bg-red-600">Crítico</Badge>;
+      case 'urgent': return <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900 dark:text-orange-300">Urgente</Badge>;
+      case 'warning': return <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-300">Advertencia</Badge>;
+      default: return null;
+    }
+  };
+
+  const daysText = doc.daysLeft !== null
+    ? doc.daysLeft <= 0
+      ? `Venció hace ${Math.abs(doc.daysLeft)} día(s)`
+      : `Vence en ${doc.daysLeft} día(s)`
+    : '';
+
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-md hover-elevate" data-testid={`expiring-doc-${doc.id}`}>
+      <CalendarClock className={`h-4 w-4 shrink-0 ${doc.urgency === 'expired' || doc.urgency === 'critical' ? 'text-red-500' : 'text-orange-500'}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{doc.name}</p>
+        <p className="text-xs text-muted-foreground">{doc.centerName} · {daysText}</p>
+      </div>
+      {getUrgencyBadge()}
+    </div>
+  );
+}
+
 function IncidentItem({ incident }: { incident: Incident }) {
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -107,6 +143,7 @@ export default function Dashboard() {
   const { data: documents = [] } = useQuery<Document[]>({ queryKey: ['/api/documents'] });
   const { data: incidents = [] } = useQuery<Incident[]>({ queryKey: ['/api/incidents'] });
   const { data: recentLogs = [] } = useQuery<AuditLog[]>({ queryKey: ['/api/audit-logs?limit=10'] });
+  const { data: expiringDocs = [] } = useQuery<ExpiringDocument[]>({ queryKey: ['/api/documents/expiring'] });
 
   const activeCenters = centers.filter(c => c.status === 'active').length;
   const pendingIncidents = incidents.filter(i => i.status === 'pending').length;
@@ -146,6 +183,23 @@ export default function Dashboard() {
           icon={Users}
         />
       </div>
+
+      {expiringDocs.length > 0 && (
+        <Card className="mb-6 border-orange-200 dark:border-orange-800">
+          <CardHeader className="flex flex-row items-center gap-2 pb-4">
+            <CalendarClock className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-base">Documentos Próximos a Vencer</CardTitle>
+            <Badge variant="outline" className="ml-auto bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900 dark:text-orange-300" data-testid="badge-expiring-count">
+              {expiringDocs.length}
+            </Badge>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            {expiringDocs.slice(0, 8).map((doc) => (
+              <ExpiringDocumentItem key={doc.id} doc={doc} />
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>

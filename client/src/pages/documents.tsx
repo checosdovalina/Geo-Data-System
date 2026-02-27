@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, Search, FileText, Clock, Download, History, Upload, Building2, FolderOpen, ArrowRight, Eye } from "lucide-react";
+import { Plus, Search, FileText, Clock, Download, History, Upload, Building2, FolderOpen, ArrowRight, Eye, CalendarClock } from "lucide-react";
 import type { Document, DocumentVersion, Center, Department } from "@shared/schema";
 import { DocumentPreviewDialog } from "@/components/document-preview-dialog";
 
@@ -25,6 +25,7 @@ const documentFormSchema = z.object({
   type: z.string().min(1, "Selecciona un tipo de documento"),
   centerId: z.string().min(1, "Selecciona un centro"),
   departmentId: z.string().min(1, "Selecciona un departamento"),
+  expirationDate: z.string().optional(),
 });
 
 type DocumentFormValues = z.infer<typeof documentFormSchema>;
@@ -60,12 +61,19 @@ function DocumentFormDialog({
       type: "",
       centerId: "",
       departmentId: "",
+      expirationDate: "",
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: DocumentFormValues) => {
-      return apiRequest("POST", "/api/documents", data);
+      const payload: any = { ...data };
+      if (payload.expirationDate) {
+        payload.expirationDate = new Date(payload.expirationDate).toISOString();
+      } else {
+        delete payload.expirationDate;
+      }
+      return apiRequest("POST", "/api/documents", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/documents'] });
@@ -164,6 +172,20 @@ function DocumentFormDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="expirationDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fecha de Vencimiento (opcional)</FormLabel>
+                  <FormControl>
+                    <Input type="date" data-testid="input-expiration-date" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -383,6 +405,22 @@ function DocumentCard({
                     {department.name}
                   </span>
                 )}
+                {document.expirationDate && (() => {
+                  const expDate = new Date(document.expirationDate);
+                  const now = new Date();
+                  const daysLeft = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                  const isExpired = daysLeft <= 0;
+                  const isCritical = daysLeft <= 7;
+                  const isUrgent = daysLeft <= 15;
+                  return (
+                    <span className={`flex items-center gap-1 ${isExpired ? 'text-red-500 font-medium' : isCritical ? 'text-red-500' : isUrgent ? 'text-orange-500' : 'text-muted-foreground'}`}>
+                      <CalendarClock className="h-3 w-3" />
+                      {isExpired
+                        ? `Vencido`
+                        : `Vence: ${expDate.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}`}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
           </div>

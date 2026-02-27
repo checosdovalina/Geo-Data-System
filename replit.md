@@ -5,10 +5,12 @@ GeoDoc Center is a SaaS document management and governance system designed for m
 
 ## Current State
 MVP implementation is complete with the following modules:
-- Dashboard with statistics overview
+- Dashboard with statistics overview + expiring documents panel
 - Interactive Mexico map for geographic visualization
 - Centers/Buildings management (CRUD)
-- Document management with version control and real file uploads
+- Document management with version control, real file uploads, and expiration dates
+- Automatic expiration reminders (30, 15, 7 days + expired) with notifications and incidents
+- Background job checks every 6 hours for expiring/expired documents
 - Departments organization
 - Users and roles management (CRUD with activate/deactivate)
 - Incidents and approvals workflow
