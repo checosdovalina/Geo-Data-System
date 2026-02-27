@@ -210,6 +210,19 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/departments/:id", async (req: Request, res: Response) => {
+    try {
+      const department = await storage.updateDepartment(req.params.id, req.body);
+      if (!department) {
+        return res.status(404).json({ error: "Department not found" });
+      }
+      await logAudit(req, "update", "department", department.id, department.name);
+      res.json(department);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update department" });
+    }
+  });
+
   // Users
   app.get("/api/users", async (req: Request, res: Response) => {
     try {

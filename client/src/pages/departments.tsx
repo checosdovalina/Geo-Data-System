@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, FolderOpen, FileText, Users, Scale, Calculator, Wrench, Shield, Settings } from "lucide-react";
+import { Plus, FolderOpen, FileText, Users, Scale, Calculator, Wrench, Shield, Settings, Pencil } from "lucide-react";
 import type { Department } from "@shared/schema";
 
 const departmentFormSchema = z.object({
@@ -46,19 +46,22 @@ const iconOptions = [
 
 function DepartmentFormDialog({ 
   open, 
-  onOpenChange 
+  onOpenChange,
+  department,
 }: { 
   open: boolean; 
   onOpenChange: (open: boolean) => void;
+  department?: Department | null;
 }) {
   const { toast } = useToast();
+  const isEditing = !!department;
 
   const form = useForm<DepartmentFormValues>({
     resolver: zodResolver(departmentFormSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      icon: "folder",
+      name: department?.name || "",
+      description: department?.description || "",
+      icon: department?.icon || "folder",
     },
   });
 
@@ -77,14 +80,38 @@ function DepartmentFormDialog({
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async (data: DepartmentFormValues) => {
+      return apiRequest("PATCH", `/api/departments/${department!.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/departments'] });
+      toast({ title: "Departamento actualizado exitosamente" });
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast({ title: "Error al actualizar el departamento", variant: "destructive" });
+    },
+  });
+
+  const onSubmit = (data: DepartmentFormValues) => {
+    if (isEditing) {
+      updateMutation.mutate(data);
+    } else {
+      createMutation.mutate(data);
+    }
+  };
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Nuevo Departamento</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Departamento' : 'Nuevo Departamento'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -147,8 +174,11 @@ function DepartmentFormDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createMutation.isPending} data-testid="button-save-department">
-                {createMutation.isPending ? 'Creando...' : 'Crear Departamento'}
+              <Button type="submit" disabled={isPending} data-testid="button-save-department">
+                {isPending
+                  ? (isEditing ? 'Guardando...' : 'Creando...')
+                  : (isEditing ? 'Guardar Cambios' : 'Crear Departamento')
+                }
               </Button>
             </div>
           </form>
@@ -159,7 +189,8 @@ function DepartmentFormDialog({
 }
 
 export default function DepartmentsPage() {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
 
   const { data: departments = [], isLoading } = useQuery<Department[]>({ 
     queryKey: ['/api/departments'] 
@@ -177,7 +208,7 @@ export default function DepartmentsPage() {
           <h1 className="text-2xl font-bold">Departamentos</h1>
           <p className="text-muted-foreground">Organiza la información por área funcional</p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} data-testid="button-new-department">
+        <Button onClick={() => setCreateDialogOpen(true)} data-testid="button-new-department">
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Departamento
         </Button>
@@ -194,7 +225,16 @@ export default function DepartmentsPage() {
           {departments.map((dept) => {
             const Icon = getIcon(dept.icon);
             return (
-              <Card key={dept.id} className="hover-elevate" data-testid={`card-department-${dept.id}`}>
+              <Card key={dept.id} className="hover-elevate group relative" data-testid={`card-department-${dept.id}`}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                  onClick={() => setEditingDepartment(dept)}
+                  data-testid={`button-edit-department-${dept.id}`}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -226,7 +266,7 @@ export default function DepartmentsPage() {
             <FolderOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
             <p className="font-medium">No hay departamentos registrados</p>
             <p className="text-sm text-muted-foreground mt-1">Crea tu primer departamento para organizar la información</p>
-            <Button className="mt-4" onClick={() => setDialogOpen(true)}>
+            <Button className="mt-4" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Crear Departamento
             </Button>
@@ -234,7 +274,19 @@ export default function DepartmentsPage() {
         </Card>
       )}
 
-      <DepartmentFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <DepartmentFormDialog 
+        open={createDialogOpen} 
+        onOpenChange={setCreateDialogOpen} 
+      />
+
+      {editingDepartment && (
+        <DepartmentFormDialog
+          key={editingDepartment.id}
+          open={!!editingDepartment}
+          onOpenChange={(open) => { if (!open) setEditingDepartment(null); }}
+          department={editingDepartment}
+        />
+      )}
     </div>
   );
 }

@@ -32,6 +32,7 @@ export interface IStorage {
   getDepartments(): Promise<Department[]>;
   getDepartment(id: string): Promise<Department | undefined>;
   createDepartment(department: InsertDepartment): Promise<Department>;
+  updateDepartment(id: string, department: Partial<InsertDepartment>): Promise<Department | undefined>;
   
   // Documents
   getDocuments(): Promise<Document[]>;
@@ -146,6 +147,11 @@ export class DatabaseStorage implements IStorage {
   async createDepartment(department: InsertDepartment): Promise<Department> {
     const [created] = await db.insert(departments).values(department).returning();
     return created;
+  }
+
+  async updateDepartment(id: string, department: Partial<InsertDepartment>): Promise<Department | undefined> {
+    const [updated] = await db.update(departments).set(department).where(eq(departments.id, id)).returning();
+    return updated;
   }
 
   // Documents
