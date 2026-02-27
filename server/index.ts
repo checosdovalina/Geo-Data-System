@@ -35,6 +35,11 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+const isProduction = process.env.NODE_ENV === "production";
+if (isProduction) {
+  app.set("trust proxy", 1);
+}
+
 const PgSession = connectPgSimple(session);
 const sessionPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -52,7 +57,7 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: false,
+      secure: isProduction,
       sameSite: "lax",
     },
   }),
