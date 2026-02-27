@@ -1,0 +1,37 @@
+[root@localhost geodoc-center]# pm2 logs geodoc --lines 15
+[TAILING] Tailing last 15 lines for [geodoc] process (change the value with --lines option)
+/root/.pm2/logs/geodoc-error.log last 15 lines:
+6|geodoc   | Internal Server Error: Error: ENOENT: no such file or directory, open '/opt/geodoc-center/dist/table.sql'
+6|geodoc   |     at async open (node:internal/fs/promises:639:25)
+6|geodoc   |     at async Object.readFile (node:internal/fs/promises:1246:14)
+6|geodoc   |     at async n._rawEnsureSessionStoreTable (/opt/geodoc-center/dist/index.cjs:74:28756)
+6|geodoc   |     at async n._asyncQuery (/opt/geodoc-center/dist/index.cjs:74:29841) {
+6|geodoc   |   errno: -2,
+6|geodoc   |   code: 'ENOENT',
+6|geodoc   |   syscall: 'open',
+6|geodoc   |   path: '/opt/geodoc-center/dist/table.sql'
+6|geodoc   | }
+6|geodoc   | Error: ENOENT: no such file or directory, open '/opt/geodoc-center/dist/table.sql'
+6|geodoc   |     at async open (node:internal/fs/promises:639:25)
+6|geodoc   |     at async Object.readFile (node:internal/fs/promises:1246:14)
+6|geodoc   |     at async n._rawEnsureSessionStoreTable (/opt/geodoc-center/dist/index.cjs:74:28756)
+6|geodoc   |     at async n._asyncQuery (/opt/geodoc-center/dist/index.cjs:74:29841)
+
+/root/.pm2/logs/geodoc-out.log last 15 lines:
+6|geodoc   | Database already seeded, skipping...
+6|geodoc   | 3:46:17 AM [express] serving on port 3500
+6|geodoc   | 3:46:25 AM [express] POST /api/auth/login 200 in 73ms :: {"user":{"id":"281c02e4-3d50-4e25-99b1-bd6cb68a57e5","username":"admin","fullName":"Carlos Rodríguez","email":"admin@geodoc.mx","role":"super_admin","departmentId":"3a69a2a5-e26b-4037-87cc-7e3f2699b98e","isActive":true,"createdAt":"2026-02-27T03:32:55.330Z","updatedAt":"2026-02-27T03:32:55.330Z"}}
+6|geodoc   | 3:46:25 AM [express] GET /api/auth/me 401 in 1ms :: {"error":"No autenticado"}
+6|geodoc   | 3:46:26 AM [express] POST /api/auth/login 200 in 67ms :: {"user":{"id":"281c02e4-3d50-4e25-99b1-bd6cb68a57e5","username":"admin","fullName":"Carlos Rodríguez","email":"admin@geodoc.mx","role":"super_admin","departmentId":"3a69a2a5-e26b-4037-87cc-7e3f2699b98e","isActive":true,"createdAt":"2026-02-27T03:32:55.330Z","updatedAt":"2026-02-27T03:32:55.330Z"}}
+6|geodoc   | 3:46:26 AM [express] GET /api/auth/me 401 in 0ms :: {"error":"No autenticado"}
+6|geodoc   | 3:46:29 AM [express] POST /api/auth/login 200 in 69ms :: {"user":{"id":"281c02e4-3d50-4e25-99b1-bd6cb68a57e5","username":"admin","fullName":"Carlos Rodríguez","email":"admin@geodoc.mx","role":"super_admin","departmentId":"3a69a2a5-e26b-4037-87cc-7e3f2699b98e","isActive":true,"createdAt":"2026-02-27T03:32:55.330Z","updatedAt":"2026-02-27T03:32:55.330Z"}}
+6|geodoc   | 3:46:29 AM [express] GET /api/auth/me 401 in 1ms :: {"error":"No autenticado"}
+6|geodoc   | 3:46:31 AM [express] POST /api/auth/login 200 in 67ms :: {"user":{"id":"281c02e4-3d50-4e25-99b1-bd6cb68a57e5","username":"admin","fullName":"Carlos Rodríguez","email":"admin@geodoc.mx","role":"super_admin","departmentId":"3a69a2a5-e26b-4037-87cc-7e3f2699b98e","isActive":true,"createdAt":"2026-02-27T03:32:55.330Z","updatedAt":"2026-02-27T03:32:55.330Z"}}
+6|geodoc   | 3:46:31 AM [express] GET /api/auth/me 401 in 1ms :: {"error":"No autenticado"}
+6|geodoc   | 3:46:43 AM [express] GET /api/auth/me 401 in 0ms :: {"error":"No autenticado"}
+6|geodoc   | 3:46:48 AM [express] POST /api/auth/login 200 in 70ms :: {"user":{"id":"281c02e4-3d50-4e25-99b1-bd6cb68a57e5","username":"admin","fullName":"Carlos Rodríguez","email":"admin@geodoc.mx","role":"super_admin","departmentId":"3a69a2a5-e26b-4037-87cc-7e3f2699b98e","isActive":true,"createdAt":"2026-02-27T03:32:55.330Z","updatedAt":"2026-02-27T03:32:55.330Z"}}
+6|geodoc   | 3:46:48 AM [express] GET /api/auth/me 401 in 1ms :: {"error":"No autenticado"}
+6|geodoc   | 3:46:56 AM [express] POST /api/auth/login 200 in 67ms :: {"user":{"id":"281c02e4-3d50-4e25-99b1-bd6cb68a57e5","username":"admin","fullName":"Carlos Rodríguez","email":"admin@geodoc.mx","role":"super_admin","departmentId":"3a69a2a5-e26b-4037-87cc-7e3f2699b98e","isActive":true,"createdAt":"2026-02-27T03:32:55.330Z","updatedAt":"2026-02-27T03:32:55.330Z"}}
+6|geodoc   | 3:46:56 AM [express] GET /api/auth/me 401 in 1ms :: {"error":"No autenticado"}
+
+
