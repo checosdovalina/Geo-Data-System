@@ -158,25 +158,25 @@ export default function LandingPage() {
 
         <div className="max-w-6xl mx-auto px-6 py-24 md:py-32 relative">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+            <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
               <Badge variant="secondary" className="mb-6 bg-white/15 text-white border-white/20 backdrop-blur-sm px-4 py-1.5">
                 <Sparkles className="h-3.5 w-3.5 mr-1.5" />
                 Plataforma SaaS para Gestión Inmobiliaria
               </Badge>
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-white animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-white animate-slide-up" style={{ animationDelay: "0.2s" }}>
               Gestión Documental y Gobernanza de{" "}
               <span className="relative">
                 <span className="relative z-10">Edificios y Centros</span>
                 <span className="absolute bottom-1 left-0 w-full h-3 bg-teal-400/30 rounded-sm -z-0" />
               </span>
             </h2>
-            <p className="text-lg md:text-xl text-white/75 mb-10 max-w-2xl mx-auto animate-slide-up leading-relaxed" style={{ animationDelay: "0.3s", opacity: 0 }}>
+            <p className="text-lg md:text-xl text-white/75 mb-10 max-w-2xl mx-auto animate-slide-up leading-relaxed" style={{ animationDelay: "0.3s" }}>
               Centraliza, versiona y controla toda la documentación de tus centros y edificios 
               en México. Con mapa interactivo, flujos de aprobación, auditoría completa y 
               almacenamiento seguro en la nube.
             </p>
-            <div className="flex items-center justify-center gap-4 flex-wrap animate-slide-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
+            <div className="flex items-center justify-center gap-4 flex-wrap animate-slide-up" style={{ animationDelay: "0.4s" }}>
               <Link href="/login">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-xl h-12 px-8 text-base font-semibold" data-testid="button-get-started">
                   <Zap className="h-4 w-4 mr-2" />
@@ -191,7 +191,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-20 animate-slide-up" style={{ animationDelay: "0.6s", opacity: 0 }}>
+          <div className="mt-20 animate-slide-up" style={{ animationDelay: "0.6s" }}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
               {stats.map((stat) => (
                 <div
@@ -231,7 +231,7 @@ export default function LandingPage() {
               <Card
                 key={feature.title}
                 className="group hover-elevate transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 overflow-hidden animate-slide-up"
-                style={{ animationDelay: `${(index + 1) * 0.08}s`, opacity: 0 }}
+                style={{ animationDelay: `${(index + 1) * 0.08}s` }}
                 data-testid={`card-feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <CardContent className="p-6">
@@ -265,7 +265,7 @@ export default function LandingPage() {
               <Card
                 key={benefit.title}
                 className="group hover-elevate transition-all duration-300 hover:shadow-lg hover:-translate-y-1 animate-slide-up"
-                style={{ animationDelay: `${(index + 1) * 0.1}s`, opacity: 0 }}
+                style={{ animationDelay: `${(index + 1) * 0.1}s` }}
                 data-testid={`card-benefit-${benefit.title.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <CardContent className="p-6">
@@ -325,7 +325,7 @@ export default function LandingPage() {
               { icon: Building2, title: "Inmuebles", desc: "Oficinas, bodegas, centros comerciales, sucursales y cualquier tipo de inmueble con ubicación geográfica y estado operativo.", color: "from-teal-500 to-emerald-500" },
               { icon: Users, title: "Equipos", desc: "Colaboración entre departamentos con roles definidos, flujos de aprobación y notificaciones para mantener a todos informados.", color: "from-purple-500 to-indigo-500" },
             ].map((item, index) => (
-              <div key={item.title} className="text-center group animate-slide-up" style={{ animationDelay: `${(index + 1) * 0.15}s`, opacity: 0 }}>
+              <div key={item.title} className="text-center group animate-slide-up" style={{ animationDelay: `${(index + 1) * 0.15}s` }}>
                 <div className={`h-16 w-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto mb-5 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}>
                   <item.icon className="h-8 w-8 text-white" />
                 </div>

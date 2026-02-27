@@ -95,7 +95,7 @@ export default function LoginPage() {
               <div
                 key={i}
                 className="flex items-center gap-4 text-left animate-slide-in-left"
-                style={{ animationDelay: `${0.3 + i * 0.1}s`, opacity: 0 }}
+                style={{ animationDelay: `${0.3 + i * 0.1}s` }}
               >
                 <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-white/10">
                   <feature.icon className="h-5 w-5 text-white/90" />
@@ -127,7 +127,7 @@ export default function LoginPage() {
         </header>
 
         <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-md animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+          <div className="w-full max-w-md animate-slide-up" style={{ animationDelay: "0.1s" }}>
             <div className="text-center mb-8 lg:hidden">
               <div className="w-18 h-18 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg w-[72px] h-[72px]">
                 <Building2 className="h-9 w-9 text-primary-foreground" />

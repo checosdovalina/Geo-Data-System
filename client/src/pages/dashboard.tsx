@@ -39,7 +39,7 @@ function StatCard({
   return (
     <Card
       className={`hover-elevate transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${gradient || ''} ${onDoubleClick ? 'cursor-pointer' : ''} animate-scale-in group`}
-      style={{ animationDelay: `${(delay || 0) * 0.1}s`, opacity: 0 }}
+      style={{ animationDelay: `${(delay || 0) * 0.1}s` }}
       onDoubleClick={onDoubleClick}
     >
       <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
@@ -285,7 +285,7 @@ export default function Dashboard() {
       </div>
 
       {expiringDocs.length > 0 && (
-        <Card className="mb-8 border-orange-200/80 dark:border-orange-800/60 border-l-4 border-l-orange-500 dark:border-l-orange-400 shadow-sm animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
+        <Card className="mb-8 border-orange-200/80 dark:border-orange-800/60 border-l-4 border-l-orange-500 dark:border-l-orange-400 shadow-sm animate-slide-up" style={{ animationDelay: "0.3s" }}>
           <CardHeader className="flex flex-row items-center gap-2 pb-4">
             <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
               <CalendarClock className="h-4 w-4 text-orange-500" />
@@ -308,7 +308,7 @@ export default function Dashboard() {
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="animate-slide-up shadow-sm" style={{ animationDelay: "0.4s", opacity: 0 }}>
+        <Card className="animate-slide-up shadow-sm" style={{ animationDelay: "0.4s" }}>
           <CardHeader className="flex flex-row items-center gap-2 pb-4">
             <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <Clock className="h-4 w-4 text-blue-500" />
@@ -333,7 +333,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="animate-slide-up shadow-sm" style={{ animationDelay: "0.5s", opacity: 0 }}>
+        <Card className="animate-slide-up shadow-sm" style={{ animationDelay: "0.5s" }}>
           <CardHeader className="flex flex-row items-center gap-2 pb-4">
             <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
