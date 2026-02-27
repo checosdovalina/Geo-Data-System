@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2, FileText, AlertTriangle, Users, TrendingUp, Clock, CheckCircle2, CalendarClock } from "lucide-react";
@@ -20,6 +21,7 @@ function StatCard({
   gradient,
   iconColor,
   iconBg,
+  onDoubleClick,
 }: { 
   title: string; 
   value: string | number; 
@@ -29,9 +31,13 @@ function StatCard({
   gradient?: string;
   iconColor?: string;
   iconBg?: string;
+  onDoubleClick?: () => void;
 }) {
   return (
-    <Card className={`hover-elevate transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${gradient || ''}`}>
+    <Card
+      className={`hover-elevate transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${gradient || ''} ${onDoubleClick ? 'cursor-pointer' : ''}`}
+      onDoubleClick={onDoubleClick}
+    >
       <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className={`h-12 w-12 rounded-md flex items-center justify-center ${iconBg || 'bg-primary/10'}`}>
@@ -54,7 +60,7 @@ function StatCard({
   );
 }
 
-function RecentActivityItem({ log }: { log: AuditLog }) {
+function RecentActivityItem({ log, onDoubleClick }: { log: AuditLog; onDoubleClick: () => void }) {
   const getActionColor = (action: string) => {
     switch (action) {
       case 'create': return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
@@ -72,12 +78,20 @@ function RecentActivityItem({ log }: { log: AuditLog }) {
       case 'view': return 'Consultó';
       case 'download': return 'Descargó';
       case 'version': return 'Nueva versión';
+      case 'login': return 'Sesión';
+      case 'approve': return 'Aprobó';
+      case 'reject': return 'Rechazó';
+      case 'list': return 'Listó';
       default: return action;
     }
   };
 
   return (
-    <div className="flex items-start gap-3 p-3 rounded-md hover-elevate">
+    <div
+      className="flex items-start gap-3 p-3 rounded-md hover-elevate cursor-pointer select-none"
+      onDoubleClick={onDoubleClick}
+      data-testid={`activity-item-${log.id}`}
+    >
       <div className={`shrink-0 px-2 py-1 rounded text-xs font-medium ${getActionColor(log.action)}`}>
         {getActionLabel(log.action)}
       </div>
@@ -92,7 +106,7 @@ function RecentActivityItem({ log }: { log: AuditLog }) {
   );
 }
 
-function ExpiringDocumentItem({ doc }: { doc: ExpiringDocument }) {
+function ExpiringDocumentItem({ doc, onDoubleClick }: { doc: ExpiringDocument; onDoubleClick: () => void }) {
   const getUrgencyBadge = () => {
     switch (doc.urgency) {
       case 'expired': return <Badge variant="destructive">Vencido</Badge>;
@@ -110,7 +124,11 @@ function ExpiringDocumentItem({ doc }: { doc: ExpiringDocument }) {
     : '';
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-md hover-elevate" data-testid={`expiring-doc-${doc.id}`}>
+    <div
+      className="flex items-center gap-3 p-3 rounded-md hover-elevate cursor-pointer select-none"
+      onDoubleClick={onDoubleClick}
+      data-testid={`expiring-doc-${doc.id}`}
+    >
       <CalendarClock className={`h-4 w-4 shrink-0 ${doc.urgency === 'expired' || doc.urgency === 'critical' ? 'text-red-500' : 'text-orange-500'}`} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{doc.name}</p>
@@ -121,7 +139,7 @@ function ExpiringDocumentItem({ doc }: { doc: ExpiringDocument }) {
   );
 }
 
-function IncidentItem({ incident }: { incident: Incident }) {
+function IncidentItem({ incident, onDoubleClick }: { incident: Incident; onDoubleClick: () => void }) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending': return <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-300">Pendiente</Badge>;
@@ -133,7 +151,11 @@ function IncidentItem({ incident }: { incident: Incident }) {
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-md hover-elevate">
+    <div
+      className="flex items-center gap-3 p-3 rounded-md hover-elevate cursor-pointer select-none"
+      onDoubleClick={onDoubleClick}
+      data-testid={`incident-item-${incident.id}`}
+    >
       <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{incident.title}</p>
@@ -145,6 +167,7 @@ function IncidentItem({ incident }: { incident: Incident }) {
 }
 
 export default function Dashboard() {
+  const [, navigate] = useLocation();
   const { data: centers = [] } = useQuery<Center[]>({ queryKey: ['/api/centers'] });
   const { data: documents = [] } = useQuery<Document[]>({ queryKey: ['/api/documents'] });
   const { data: incidents = [] } = useQuery<Incident[]>({ queryKey: ['/api/incidents'] });
@@ -153,6 +176,17 @@ export default function Dashboard() {
 
   const activeCenters = centers.filter(c => c.status === 'active').length;
   const pendingIncidents = incidents.filter(i => i.status === 'pending').length;
+
+  const getActivityRoute = (log: AuditLog) => {
+    switch (log.entityType) {
+      case 'center': return log.entityId ? `/centers/${log.entityId}` : '/centers';
+      case 'document':
+      case 'document_version': return '/documents';
+      case 'user': return '/users';
+      case 'incident': return '/incidents';
+      default: return '/audit';
+    }
+  };
 
   return (
     <div className="flex-1 overflow-auto p-6" data-testid="page-dashboard">
@@ -177,6 +211,7 @@ export default function Dashboard() {
           gradient="stat-gradient-blue"
           iconColor="text-blue-600 dark:text-blue-400"
           iconBg="bg-blue-100 dark:bg-blue-900/30"
+          onDoubleClick={() => navigate('/centers')}
         />
         <StatCard 
           title="Documentos" 
@@ -187,6 +222,7 @@ export default function Dashboard() {
           gradient="stat-gradient-teal"
           iconColor="text-teal-600 dark:text-teal-400"
           iconBg="bg-teal-100 dark:bg-teal-900/30"
+          onDoubleClick={() => navigate('/documents')}
         />
         <StatCard 
           title="Incidentes Pendientes" 
@@ -196,6 +232,7 @@ export default function Dashboard() {
           gradient="stat-gradient-amber"
           iconColor="text-amber-600 dark:text-amber-400"
           iconBg="bg-amber-100 dark:bg-amber-900/30"
+          onDoubleClick={() => navigate('/incidents')}
         />
         <StatCard 
           title="Usuarios Activos" 
@@ -205,6 +242,7 @@ export default function Dashboard() {
           gradient="stat-gradient-purple"
           iconColor="text-purple-600 dark:text-purple-400"
           iconBg="bg-purple-100 dark:bg-purple-900/30"
+          onDoubleClick={() => navigate('/users')}
         />
       </div>
 
@@ -219,7 +257,11 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="space-y-1">
             {expiringDocs.slice(0, 8).map((doc) => (
-              <ExpiringDocumentItem key={doc.id} doc={doc} />
+              <ExpiringDocumentItem
+                key={doc.id}
+                doc={doc}
+                onDoubleClick={() => navigate(`/centers/${doc.centerId}`)}
+              />
             ))}
           </CardContent>
         </Card>
@@ -234,7 +276,11 @@ export default function Dashboard() {
           <CardContent className="space-y-1">
             {recentLogs.length > 0 ? (
               recentLogs.slice(0, 5).map((log) => (
-                <RecentActivityItem key={log.id} log={log} />
+                <RecentActivityItem
+                  key={log.id}
+                  log={log}
+                  onDoubleClick={() => navigate(getActivityRoute(log))}
+                />
               ))
             ) : (
               <div className="py-8 text-center text-muted-foreground">
@@ -253,7 +299,11 @@ export default function Dashboard() {
           <CardContent className="space-y-1">
             {incidents.length > 0 ? (
               incidents.slice(0, 5).map((incident) => (
-                <IncidentItem key={incident.id} incident={incident} />
+                <IncidentItem
+                  key={incident.id}
+                  incident={incident}
+                  onDoubleClick={() => navigate('/incidents')}
+                />
               ))
             ) : (
               <div className="py-8 text-center text-muted-foreground">
