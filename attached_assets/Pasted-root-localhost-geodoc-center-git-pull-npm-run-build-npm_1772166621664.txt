@@ -1,0 +1,55 @@
+root@localhost geodoc-center]# git pull
+npm run build
+npm run db:push
+
+pm2 restart geodoc
+Already up to date.
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1752 modules transformed.
+../dist/public/index.html                   1.45 kB │ gzip:   0.66 kB
+../dist/public/assets/index-_Tg74Vo7.css   80.92 kB │ gzip:  12.92 kB
+../dist/public/assets/index-CUaH5enh.js   593.02 kB │ gzip: 170.11 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.96s
+building server...
+
+  dist/index.cjs  1.1mb ⚠️
+
+⚡ Done in 85ms
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/opt/geodoc-center/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+ Warning  Found data-loss statements:
+· You're about to delete session table with 1 items
+
+THIS ACTION WILL CAUSE DATA LOSS AND CANNOT BE REVERTED
+
+Do you still want to push changes?
+[x] All changes were aborted
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [geodoc](ids: [ 6 ])
+[PM2] [geodoc](6) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 3  │ comite-app         │ fork     │ 14   │ online    │ 0%       │ 121.6mb  │
+│ 6  │ geodoc             │ fork     │ 6    │ online    │ 0%       │ 17.0mb   │
+│ 4  │ sheltiescrm        │ fork     │ 8    │ online    │ 0%       │ 68.9mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[root@localhost geodoc-center]# 
