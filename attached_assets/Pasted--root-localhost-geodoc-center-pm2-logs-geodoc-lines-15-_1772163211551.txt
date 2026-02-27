@@ -1,0 +1,34 @@
+[root@localhost geodoc-center]# pm2 logs geodoc --lines 15
+[TAILING] Tailing last 15 lines for [geodoc] process (change the value with --lines option)
+/root/.pm2/logs/geodoc-error.log last 15 lines:
+6|geodoc   | "Error seeding database:",t),t}}var Ir=(0,Xo.default)(),qC=(0,RC.createServer)(Ir);Ir.use(Xo.default.json({verify:(t,e,r)=>{t.rawBody=r}}));Ir.use(Xo.default.urlencoded({extended:!1}));var PN=(0,DC.default)(Jf.default),IN=new zt.Pool({connectionString:process.env.DATABASE_URL});Ir.use((0,Jf.default)({store:new PN({pool:IN,createTableIfMissing:!0}),secret:process.env.SESSION_SECRET||"geodoc-secret-key-change-in-production",resave:!1,saveUninitialized:!1,cookie:{maxAge:1440*60*1e3,httpOnly:!0,secure:!1,sameSite:"lax"}}));function Xf(t,e="express"){let r=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit",hour12:!0});console.log(`${r} [${e}] ${t}`)}Ir.use((t,e,r)=>{let n=Date.now(),i=t.path,s,a=e.json;e.json=function(o,...l){return s=o,a.apply(e,[o,...l])},e.on("finish",()=>{let o=Date.now()-n;if(i.startsWith("/api")){let l=`${t.method} ${i} ${e.statusCode} in ${o}ms`;s&&(l+=` :: ${JSON.stringify(s)}`),Xf(l)}}),r()});(async()=>{try{await FC()}catch(e){console.error("Failed to seed database:",e)}await IC(qC,Ir),Ir.use((e,r,n,i)=>{let s=e.status||e.statusCode||500,a=e.message||"Internal Server Error";return console.error("Internal Server Error:",e),n.headersSent?i(e):n.status(s).json({message:a})}),NC(Ir);let t=parseInt(process.env.PORT||"5000",10);qC.listen({port:t,host:"0.0.0.0",reusePort:!0},()=>{Xf(`serving on port ${t}`)})})();0&&(module.exports={log});
+6|geodoc   | 		                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+6|geodoc   | 
+6|geodoc   | Error: DATABASE_URL must be set. Did you forget to provision a database?
+6|geodoc   |     at Object.<anonymous> (/opt/geodoc-center/dist/index.cjs:80:103418)
+6|geodoc   |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+6|geodoc   |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+6|geodoc   |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+6|geodoc   |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+6|geodoc   |     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+6|geodoc   |     at node:internal/main/run_main_module:28:49
+6|geodoc   | 
+6|geodoc   | Node.js v20.19.6
+
+/root/.pm2/logs/geodoc-out.log last 15 lines:
+6|geodoc   | 
+6|geodoc   | > rest-express@1.0.0 start
+6|geodoc   | > NODE_ENV=production node dist/index.cjs
+6|geodoc   | 
+6|geodoc   | Seeding database...
+6|geodoc   | Inserted 7 departments
+6|geodoc   | Inserted 5 users
+6|geodoc   | Inserted 8 centers
+6|geodoc   | Inserted 6 documents
+6|geodoc   | Inserted document versions (approved and pending)
+6|geodoc   | Inserted incidents
+6|geodoc   | Inserted audit logs
+6|geodoc   | Inserted notifications
+6|geodoc   | Database seeding completed successfully!
+6|geodoc   | 3:32:55 AM [express] serving on port 3500
+
