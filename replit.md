@@ -3,6 +3,16 @@
 ## Overview
 GeoDoc Center is a SaaS document management and governance system designed for managing buildings and centers across Mexico. It provides centralized document storage with versioning, complete audit trails, geographic visualization, and incident management workflows.
 
+## Visual Design
+- **Color Palette**: Blue-teal professional (primary 210/100%, teal accents)
+- **Landing**: Animated gradient hero with dot pattern overlay, glass-effect stat cards, gradient feature icons with unique colors per card
+- **Login**: Split-screen layout (left: animated gradient hero with floating particles + feature list, right: glass-card form); mobile: gradient mesh background
+- **Dashboard**: Personalized greeting with date, stat cards with unique gradient backgrounds (blue/teal/amber/purple), animated scale-in entrance, activity/incidents cards with icon badges
+- **Sidebar**: Gradient logo, dynamic avatar with initials + color based on name, live badge counts from API (incidents + notifications), role badge with color coding
+- **Utility CSS**: `.glass-card`, `.glass-effect`, `.gradient-primary`, `.gradient-hero-animated`, `.gradient-mesh`, `.gradient-border`, `.text-gradient`, `.hero-pattern`, `.hero-dots`, `.stat-gradient-*`, `.card-shine`
+- **Animations**: `fade-in`, `slide-up`, `slide-in-left`, `slide-in-right`, `float`, `pulse-glow`, `scale-in`, `gradient-shift`, `bounce-subtle`, `count-up`
+- **Dark mode**: Full support with dedicated CSS variables in `.dark` class
+
 ## Current State
 MVP implementation is complete with the following modules:
 - Dashboard with statistics overview + expiring documents panel
